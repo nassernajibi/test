@@ -1,3 +1,5 @@
+![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=nassernajibi.FLOOD-XML-Mapper)
+
 # FLOOD-XML Mapper
 
 ## [Launch Dashboard](https://nassernajibi.github.io/FLOOD-XML-Mapper)

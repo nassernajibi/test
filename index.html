@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GitHub Pages Map</title>
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+      defer
+    ></script>
+
+    <style>
+      html, body { height: 100%; margin: 0; }
+      #map { height: 100%; }
+    </style>
+  </head>
+
+  <body>
+    <div id="map"></div>
+
+    <script>
+      window.addEventListener("DOMContentLoaded", async () => {
+        const map = L.map("map").setView([29.7, -82.3], 7);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        const res = await fetch("./data/points.geojson");
+        if (!res.ok) throw new Error(`Failed to load GeoJSON: ${res.status}`);
+        const geojson = await res.json();
+
+        const layer = L.geoJSON(geojson, {
+          onEachFeature: (feature, lyr) => {
+            const name = feature.properties?.name ?? "Unknown";
+            const value = feature.properties?.value ?? "NA";
+            lyr.bindPopup(`<b>${name}</b><br/>value: ${value}`);
+          }
+        }).addTo(map);
+
+        map.fitBounds(layer.getBounds(), { padding: [20, 20] });
+      });
+    </script>
+  </body>
+</html>

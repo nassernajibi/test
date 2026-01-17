@@ -11,33 +11,43 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
-    /* High Visibility Styling */
-    html, body { height: 100%; margin: 0; font-family: 'Segoe UI', Arial, sans-serif; overflow: hidden; font-size: 18px; }
+    /* Font Strategy: Aptos followed by Segoe UI */
+    html, body { 
+      height: 100%; margin: 0; 
+      font-family: 'Aptos', 'Segoe UI', sans-serif; 
+      overflow: hidden; font-size: 18px; 
+      font-weight: 400; /* No bold by default */
+    }
     #map { height: 100%; width: 100%; z-index: 1; background: #cad2d3; }
 
+    /* Left Controls Group */
     .left-controls { position: absolute; top: 15px; left: 15px; z-index: 1100; display: flex; flex-direction: column; gap: 15px; width: 420px; }
     .topbar, .legend, .stats-card { background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
     
-    label { font-size: 16px; font-weight: 800; color: #222; text-transform: uppercase; display: block; margin-bottom: 8px; }
-    select, button { width: 100%; padding: 14px; border-radius: 10px; border: 2px solid #bbb; font-size: 18px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    /* Control Menu specific bolding */
+    .topbar label { font-size: 16px; font-weight: 700; color: #222; text-transform: uppercase; display: block; margin-bottom: 8px; }
+    .topbar select, .topbar button, .topbar div[style*="font-weight"] { font-weight: 700 !important; }
+
+    select, button { width: 100%; padding: 14px; border-radius: 10px; border: 2px solid #bbb; font-size: 18px; cursor: pointer; transition: 0.2s; font-family: inherit; }
     button:hover { background: #f0f0f0; border-color: #900; }
 
+    /* Sidebar and Stats (Regular Weight) */
     .sidebar { position: absolute; top: 15px; right: 15px; z-index: 1100; background: #fff; width: 450px; max-height: calc(100% - 320px); border-radius: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
     .sidebar.hidden { display: none; }
     .sidebar-body { padding: 25px; overflow-y: auto; flex-grow: 1; }
+    .sidebar label { font-size: 16px; color: #555; text-transform: uppercase; display: block; margin-bottom: 8px; font-weight: 400; }
 
     .bottom-panel { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1100; background: #fff; width: 97%; height: 280px; border-radius: 15px; box-shadow: 0 -5px 25px rgba(0,0,0,0.4); padding: 20px 30px; box-sizing: border-box; }
     .bottom-panel.hidden { display: none; }
 
-    /* Legend Color Scale */
-    .legend-row { display: flex; align-items: center; gap: 15px; margin: 10px 0; font-size: 16px; font-weight: 600; }
+    .legend-row { display: flex; align-items: center; gap: 15px; margin: 10px 0; font-size: 16px; }
     .swatch { width: 35px; height: 22px; border-radius: 5px; border: 1px solid #444; }
     
-    .stats-card { border-left: 8px solid #800000; }
-    .stat-val { font-size: 24px; font-weight: 900; color: #800000; }
+    .stats-card { border-left: 8px solid #800000; font-weight: 400; }
+    .stat-val { font-size: 24px; color: #800000; }
 
     .event-item { padding: 15px 0; border-bottom: 1px solid #ddd; font-size: 15px; line-height: 1.5; }
-    .pill { background: #ffebeb; color: #800000; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 900; border: 1px solid #800000; }
+    .pill { background: #ffebeb; color: #800000; padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid #800000; }
     
     #chartHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
   </style>
@@ -53,10 +63,10 @@
       <div>
         <label>Model Logic</label>
         <select id="modelSelect">
-          <option value="ensemble">Ensemble (All Models)</option>
+          <option value="ensemble">Ensemble (Spread)</option>
+          <option value="lm_USD">MLR (Linear)</option>
           <option value="rf_USD">Random Forest</option>
           <option value="xgb_USD">XGBoost</option>
-          <option value="lm_USD">MLR (Linear)</option>
           <option value="svr_USD">SVR</option>
           <option value="brnn_USD">BRNN</option>
           <option value="knn_USD">KNN</option>
@@ -69,49 +79,49 @@
     </div>
     <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
       <button id="dlCountry" style="background:#f4f9ff;">Download CSV</button>
-      <button id="clearBtn" style="background:#fff5f5;">Reset Map</button>
+      <button id="clearBtn" style="background:#fff1f1;">Reset Map</button>
     </div>
   </div>
 
   <div id="legend" class="legend">
-    <label>Annual Damages (USD)</label>
+    <label style="font-weight: 400; text-transform: none;">Annual Damages (USD)</label>
     <div id="legendItems"></div>
   </div>
 
   <div id="statsBox" class="stats-card hidden">
-    <label>Country Statistics</label>
+    <label style="font-weight: 400; text-transform: none;">Country Statistics</label>
     <div id="countryStats"></div>
   </div>
 </div>
 
 <div id="sidebar" class="sidebar hidden">
   <div class="sidebar-body">
-    <div id="countryName" style="font-weight:900; font-size:30px; color:#222; margin-bottom:15px;">Country</div>
-    <label>Filter Log Range</label>
+    <div id="countryName" style="font-size:30px; color:#222; margin-bottom:15px;">Country</div>
+    <label>Filter Range</label>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:25px;">
       <select id="startYear"></select>
       <select id="endYear"></select>
     </div>
-    <div style="font-weight:800; font-size:18px; margin-bottom:15px; color:#444; border-bottom: 2px solid #eee;">INDIVIDUAL FLOOD EVENTS</div>
+    <div style="font-size:18px; margin-bottom:15px; color:#444; border-bottom: 2px solid #eee;">INDIVIDUAL FLOOD EVENTS</div>
     <div id="eventsList"></div>
   </div>
 </div>
 
 <div id="bottomPanel" class="bottom-panel hidden">
   <div id="chartHeader">
-    <div style="font-weight:900; font-size:20px;">Time Series Trend (Logarithmic Scale)</div>
-    <button id="savePng" style="width:auto; padding: 8px 20px; background:#e8f5e9; border-color:#2e7d32;">Export PNG Chart</button>
+    <div style="font-size:20px;">Time Series Trend (Logarithmic Scale)</div>
+    <button id="savePng" style="width:auto; padding: 8px 20px; background:#e8f5e9; border-color:#2e7d32; font-weight:700 !important;">Export PNG</button>
   </div>
   <div style="height:180px; width:100%;"><canvas id="tsChart"></canvas></div>
 </div>
 
 <script>
-  // Color Range: Darkish Yellow -> Red -> Dark Brown
   const BINS = [0, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11];
-  const COLORS = ["#f9eb4d", "#f7b500", "#fa6400", "#e02020", "#b00000", "#800000", "#4b0000", "#2b0000"];
-  const BASE_MODELS = ["rf_USD", "xgb_USD", "lm_USD", "svr_USD", "brnn_USD", "knn_USD"];
+  // Darkish Yellow to Red to Dark Brown
+  const COLORS = ["#d4c300", "#e6a300", "#f77f00", "#d62828", "#9d0208", "#6a040f", "#370617", "#03071e"];
+  // Models in the exact order requested
+  const BASE_MODELS = ["lm_USD", "rf_USD", "xgb_USD", "svr_USD", "brnn_USD", "knn_USD"];
   
-  // Comprehensive country name matching
   const NAME_TO_ISO = { 
     "usa": "USA", "uk": "GBR", "united kingdom": "GBR", "russia": "RUS", "vietnam": "VNM", 
     "south korea": "KOR", "iran": "IRN", "democratic republic of the congo": "COD", 
@@ -151,8 +161,7 @@
         if (!iso) {
           const f = countriesGeo.features.find(feat => 
             feat.properties.ADMIN?.toLowerCase() === row.country?.toLowerCase() || 
-            feat.properties.NAME?.toLowerCase() === row.country?.toLowerCase() ||
-            feat.properties.ISO_A3 === row.country
+            feat.properties.NAME?.toLowerCase() === row.country?.toLowerCase()
           );
           iso = f ? (f.properties.ISO_A3 || f.properties.ADM0_A3) : null;
         }
@@ -173,7 +182,7 @@
 
       renderLegend();
       updateMap();
-    } catch (e) { alert("Data load failed. Check file paths."); }
+    } catch (e) { console.error(e); }
   }
 
   function updateMap() {
@@ -185,11 +194,8 @@
       style: f => {
         const iso = f.properties.ISO_A3 || f.properties.ADM0_A3 || NAME_TO_ISO[f.properties.ADMIN?.toLowerCase()];
         const rows = eventsByIso.get(iso)?.annual[yr] || [];
-        let val = 0;
-        if (rows.length > 0) {
-          val = (mod === 'ensemble') ? getStats(rows).med : rows.reduce((s,r) => s + (parseFloat(r[mod])||0), 0);
-        }
-        return { fillColor: getColor(val), weight: 1.5, color: '#fff', fillOpacity: 0.9 };
+        let val = (rows.length > 0) ? (mod === 'ensemble' ? getStats(rows).med : rows.reduce((s,r) => s + (parseFloat(r[mod])||0), 0)) : 0;
+        return { fillColor: getColor(val), weight: 1.2, color: '#fff', fillOpacity: 0.9 };
       },
       onEachFeature: (f, l) => {
         l.on('click', () => {
@@ -222,39 +228,33 @@
     const entry = eventsByIso.get(selectedIso);
     const mod = el('modelSelect').value;
     
-    // 1. Map Point Markers
     eventMarkers.clearLayers();
     entry.events.forEach(e => {
       if (e.lat && e.lon) {
-        L.circleMarker([e.lat, e.lon], { radius: 8, color: '#000', weight: 1.5, fillColor: '#ffff00', fillOpacity: 1 })
-        .addTo(eventMarkers)
-        .bindPopup(`<b>Date: ${e.Began}</b><br>Cause: ${e.MainCause}<br>Damage: ${formatUSD(getStats(e).med)}`);
+        L.circleMarker([e.lat, e.lon], { radius: 8, color: '#333', weight: 1, fillColor: '#ffff00', fillOpacity: 1 })
+        .addTo(eventMarkers).bindPopup(`Date: ${e.Began}<br>Damage (Med): ${formatUSD(getStats(e).med)}`);
       }
     });
 
-    // 2. Statistics Calculation
     const totalArea = entry.events.reduce((s,e)=>s+(parseFloat(e.area)||0),0);
-    const totalDeaths = entry.events.reduce((s,e)=>s+(parseFloat(e.dead)||0),0);
     const avgDur = entry.events.reduce((s,e)=>s+(parseFloat(e.duration)||0),0) / entry.events.length;
     
     el('countryStats').innerHTML = `
       <div style="margin-bottom:12px;">Events: <span class="stat-val">${entry.events.length}</span></div>
       <div style="margin-bottom:12px;">Avg Duration: <span class="stat-val">${avgDur.toFixed(1)} Days</span></div>
-      <div style="margin-bottom:12px;">Total Area: <span class="stat-val">${formatUSD(totalArea).replace('$','')} km²</span></div>
-      <div>Total Mortality: <span class="stat-val">${totalDeaths}</span></div>
+      <div>Affected Area: <span class="stat-val">${formatUSD(totalArea).replace('$','')} km²</span></div>
     `;
 
-    // 3. Log Scale Time Series Chart
     const dataset = years.map(y => { const rs = entry?.annual[y] || []; return rs.length === 0 ? {med:0,min:0,max:0} : getStats(rs); });
     if (chart) chart.destroy();
     
     const chartData = {
       labels: years,
       datasets: mod === 'ensemble' ? [
-        { label: 'Median', data: dataset.map(d=>d.med), borderColor: '#800000', borderWidth: 3, fill: false, z:10 },
-        { label: 'Max', data: dataset.map(d=>d.max), fill: '+1', backgroundColor: 'rgba(128,0,0,0.15)', borderColor: 'transparent', pointRadius: 0 },
+        { label: 'Median', data: dataset.map(d=>d.med), borderColor: '#800000', borderWidth: 2, fill: false, pointRadius: 3 },
+        { label: 'Max', data: dataset.map(d=>d.max), fill: '+1', backgroundColor: 'rgba(128,0,0,0.1)', borderColor: 'transparent', pointRadius: 0 },
         { label: 'Min', data: dataset.map(d=>d.min), fill: false, borderColor: 'transparent', pointRadius:0 }
-      ] : [{ label: mod, data: dataset.map(d=>d.med), borderColor: '#800000', borderWidth: 3, fill: true, backgroundColor: 'rgba(128,0,0,0.1)' }]
+      ] : [{ label: mod, data: dataset.map(d=>d.med), borderColor: '#800000', borderWidth: 2, fill: true, backgroundColor: 'rgba(128,0,0,0.05)', pointRadius: 3 }]
     };
 
     chart = new Chart(el('tsChart'), {
@@ -266,25 +266,23 @@
           y: { 
             type: 'logarithmic', 
             min: 1e5, 
-            ticks: { callback: v => formatUSD(v), font: { size: 14, weight: 'bold' } } 
+            ticks: { callback: v => formatUSD(v), font: { size: 14 } } 
           },
-          x: { ticks: { font: { size: 14, weight: 'bold' } } }
+          x: { ticks: { font: { size: 14 } } }
         },
         plugins: { legend: { display: false } }
       }
     });
 
-    // 4. Sidebar List
     const s = parseInt(el('startYear').value), eY = parseInt(el('endYear').value);
     const filtered = entry.events.filter(e => { const y = parseInt(e.Began?.split('/')[0]); return y >= s && y <= eY; });
-    el('eventsList').innerHTML = filtered.map(e => `
+    el('eventsList').innerHTML = filtered.map(ev => `
       <div class="event-item">
-        <span class="pill">YEAR ${e.Began.split('/')[0]}</span> <b>${e.MainCause || 'Flood Event'}</b><br/>
-        <small>Coords: ${e.lat}, ${e.lon} | Median Est: ${formatUSD(getStats(e).med)}</small>
+        <span class="pill">YEAR ${ev.Began.split('/')[0]}</span> <span>${ev.MainCause || 'Flood Event'}</span><br/>
+        <small style="color:#666">Loc: ${ev.lat}, ${ev.lon} | Damage: ${formatUSD(getStats(ev).med)}</small>
       </div>`).join('');
   }
 
-  // Save Chart PNG
   el('savePng').onclick = () => {
     const link = document.createElement('a');
     link.download = `FLOOD-CHART-${el('countryName').textContent}.png`;
@@ -292,7 +290,6 @@
     link.click();
   };
 
-  // Fixed File Naming Logic
   el('dlCountry').onclick = () => {
     if (!selectedIso) return alert("Select a country on the map first.");
     const countryName = el('countryName').textContent.replace(/\s+/g, '-');

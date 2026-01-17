@@ -201,11 +201,12 @@
     entry.events.forEach(e => {
       if (e.lat && e.lon) {
         const dmg = mod === 'ensemble' ? getStats(e).med : (parseFloat(e[mod]) || 0);
+        const deathVal = e.dead || e.deaths || 0; // Fixed mapping
         L.circleMarker([e.lat, e.lon], { radius: 8, color: '#333', weight: 1, fillColor: '#ffff00', fillOpacity: 1 })
         .addTo(eventMarkers).bindTooltip(`
           <b>${e.MainCause}</b><br>
           Began: ${e.Began}<br>Ended: ${e.Ended}<br>
-          Duration: ${e.duration} days<br>Deaths: ${e.dead || 0}<br>
+          Duration: ${e.duration} days<br>Deaths: ${deathVal}<br>
           Area: ${e.area} km²<br>Damage: ${formatUSD(dmg)}
         `);
       }
@@ -241,7 +242,7 @@
     chart = new Chart(el('tsChart'), {
       type: 'bar',
       data: {
-        labels: years, // Reverted to plain years
+        labels: years,
         datasets: [{
           data: dataset.map(d => d.med),
           backgroundColor: '#000000',
@@ -271,17 +272,18 @@
     const filtered = entry.events.filter(e => { const y = parseInt(e.Began?.split('/')[0]); return y >= s && y <= eY; });
     el('eventsList').innerHTML = filtered.map(ev => {
       const dmg = mod === 'ensemble' ? getStats(ev).med : (parseFloat(ev[mod]) || 0);
+      const deathVal = ev.dead || ev.deaths || 0; // Fixed mapping
       return `<div class="event-item">
         <span class="pill">${ev.Began} - ${ev.Ended}</span><br>
         <b>${ev.MainCause}</b><br>
-        Duration: ${ev.duration} days | Deaths: ${ev.dead || 0}<br>
+        Duration: ${ev.duration} days | Deaths: ${deathVal}<br>
         Area: ${ev.area} km² | Damage: ${formatUSD(dmg)}<br>
         <span class="coord-text">Coords: ${ev.lat}, ${ev.lon}</span>
       </div>`;
     }).join('');
     
     const totalArea = entry.events.reduce((s,e)=>s+(parseFloat(e.area)||0),0);
-    const totalDeaths = entry.events.reduce((s,e)=>s+(parseFloat(e.dead)||0),0);
+    const totalDeaths = entry.events.reduce((s,e)=>s+(parseFloat(e.dead || e.deaths)||0),0); // Fixed mapping
     el('countryStats').innerHTML = `
         Events: <span class="stat-val">${entry.events.length}</span><br>
         Total Deaths: <span class="stat-val">${totalDeaths}</span><br>

@@ -1,55 +1,201 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>GitHub Pages Map</title>
+<head>
+  <meta charset="utf-8" />
+  <title>World GDP Choropleth (Time Enabled)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
-    />
-    <script
-      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-      crossorigin=""
-      defer
-    ></script>
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    crossorigin=""
+    defer
+  ></script>
 
-    <style>
-      html, body { height: 100%; margin: 0; }
-      #map { height: 100%; }
-    </style>
-  </head>
+  <!-- PapaParse for CSV -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"
+    defer
+  ></script>
 
-  <body>
-    <div id="map"></div>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    #map {
+      height: 100%;
+    }
+    .control {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 1000;
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.15);
+      min-width: 240px;
+    }
+    .control label {
+      font-size: 13px;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .control select {
+      width: 100%;
+      padding: 6px;
+    }
+    .status {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #444;
+    }
+  </style>
+</head>
 
-    <script>
-      window.addEventListener("DOMContentLoaded", async () => {
-        const map = L.map("map").setView([29.7, -82.3], 7);
+<body>
+  <div class="control">
+    <label for="yearSelect"><b>GDP (current US$)</b></label>
+    <select id="yearSelect" disabled></select>
+    <div class="status" id="status">Loading…</div>
+  </div>
 
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19,
-          attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+  <div id="map"></div>
 
-        const res = await fetch("./data/points.geojson");
-        if (!res.ok) throw new Error(`Failed to load GeoJSON: ${res.status}`);
-        const geojson = await res.json();
+  <script>
+    window.addEventListener("DOMContentLoaded", async () => {
 
-        const layer = L.geoJSON(geojson, {
-          onEachFeature: (feature, lyr) => {
-            const name = feature.properties?.name ?? "Unknown";
-            const value = feature.properties?.value ?? "NA";
-            lyr.bindPopup(`<b>${name}</b><br/>value: ${value}`);
-          }
-        }).addTo(map);
+      const statusEl = document.getElementById("status");
+      const yearSelect = document.getElementById("yearSelect");
 
-        map.fitBounds(layer.getBounds(), { padding: [20, 20] });
+      /* ------------------ MAP ------------------ */
+      const map = L.map("map").setView([20, 0], 2);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(map);
+
+      /* ------------------ LOAD GEOJSON ------------------ */
+      statusEl.textContent = "Loading country boundaries…";
+      const geoRes = await fetch("./data/countries.geojson");
+      if (!geoRes.ok) throw new Error("countries.geojson not found");
+      const countries = await geoRes.json();
+
+      /* ------------------ LOAD CSV ------------------ */
+      statusEl.textContent = "Loading GDP data…";
+      const csvText = await (await fetch("./data/world_gdp.csv")).text();
+
+      const parsed = Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true
       });
-    </script>
-  </body>
+
+      /* ------------------ PROCESS CSV ------------------ */
+      const rows = parsed.data;
+
+      // Identify year columns dynamically (1960, 1961, …)
+      const yearCols = Object.keys(rows[0]).filter(k => /^\d{4}$/.test(k)).sort();
+
+      // Build lookup: gdp[year][ISO3] = value
+      const gdp = {};
+      yearCols.forEach(y => gdp[y] = {});
+
+      rows.forEach(row => {
+        const iso3 = row["Country Code"];
+        if (!iso3) return;
+
+        yearCols.forEach(y => {
+          const v = Number(String(row[y]).replace(/,/g, ""));
+          if (Number.isFinite(v)) {
+            gdp[y][iso3] = v;
+          }
+        });
+      });
+
+      /* ------------------ COLOR SCALE ------------------ */
+      function getColor(v) {
+        if (v == null) return "#e0e0e0";
+        if (v > 1e13) return "#08306b";
+        if (v > 1e12) return "#2171b5";
+        if (v > 1e11) return "#6baed6";
+        if (v > 1e10) return "#c6dbef";
+        return "#eff3ff";
+      }
+
+      function formatUSD(v) {
+        if (v == null) return "NA";
+        return new Intl.NumberFormat("en-US", {
+          notation: "compact",
+          maximumFractionDigits: 2
+        }).format(v);
+      }
+
+      /* ------------------ CHOROPLETH ------------------ */
+      let currentYear = yearCols.includes("2020") ? "2020" : yearCols.at(-1);
+
+      function style(feature) {
+        const iso3 = feature.properties?.ISO_A3;
+        const value = iso3 && iso3 !== "-99" ? gdp[currentYear][iso3] : null;
+        return {
+          weight: 0.5,
+          color: "#666",
+          fillOpacity: 0.75,
+          fillColor: getColor(value)
+        };
+      }
+
+      function onEachFeature(feature, layer) {
+        const name = feature.properties?.ADMIN || feature.properties?.NAME || "Unknown";
+        const iso3 = feature.properties?.ISO_A3 || "NA";
+        const value = iso3 !== "-99" ? gdp[currentYear][iso3] : null;
+
+        layer.bindPopup(
+          `<b>${name}</b><br/>ISO3: ${iso3}<br/>GDP (${currentYear}): ${formatUSD(value)}`
+        );
+
+        layer.on("mouseover", () => layer.setStyle({ weight: 2 }));
+        layer.on("mouseout", () => layer.setStyle({ weight: 0.5 }));
+      }
+
+      const geoLayer = L.geoJSON(countries, {
+        style,
+        onEachFeature
+      }).addTo(map);
+
+      map.fitBounds(geoLayer.getBounds(), { padding: [10, 10] });
+
+      /* ------------------ YEAR CONTROL ------------------ */
+      yearCols.forEach(y => {
+        const opt = document.createElement("option");
+        opt.value = y;
+        opt.textContent = y;
+        yearSelect.appendChild(opt);
+      });
+
+      yearSelect.value = currentYear;
+
+      function refresh() {
+        geoLayer.setStyle(style);
+        geoLayer.eachLayer(l => onEachFeature(l.feature, l));
+      }
+
+      yearSelect.addEventListener("change", () => {
+        currentYear = yearSelect.value;
+        refresh();
+      });
+
+      yearSelect.disabled = false;
+      statusEl.textContent = "Ready";
+      refresh();
+    });
+  </script>
+</body>
 </html>

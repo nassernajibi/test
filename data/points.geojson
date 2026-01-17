@@ -1,0 +1,15 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Gainesville, FL", "value": 10 },
+      "geometry": { "type": "Point", "coordinates": [-82.3248, 29.6516] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "name": "Jacksonville, FL", "value": 25 },
+      "geometry": { "type": "Point", "coordinates": [-81.6557, 30.3322] }
+    }
+  ]
+}

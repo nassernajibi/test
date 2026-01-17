@@ -12,7 +12,7 @@
   <!-- PapaParse (CSV) -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
 
-  <!-- Chart.js (time series) -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
 
   <style>
@@ -29,7 +29,7 @@
       border-radius: 10px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.15);
       min-width: 330px;
-      max-width: 420px;
+      max-width: 440px;
     }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .row.single { grid-template-columns: 1fr; }
@@ -45,6 +45,7 @@
     button { cursor: pointer; }
     button.secondary { background: #f7f7f7; }
     .status { margin-top: 8px; font-size: 12px; color: #444; }
+    .muted { color: #666; }
 
     .panel {
       position: absolute;
@@ -52,7 +53,7 @@
       right: 12px;
       z-index: 1100;
       background: #fff;
-      width: 430px;
+      width: 470px;
       max-width: calc(100% - 24px);
       height: calc(100% - 24px);
       border-radius: 10px;
@@ -71,16 +72,8 @@
       align-items: center;
       gap: 10px;
     }
-    .panel-title {
-      font-weight: 650;
-      font-size: 14px;
-      line-height: 1.2;
-    }
-    .panel-subtitle {
-      font-size: 12px;
-      color: #555;
-      margin-top: 3px;
-    }
+    .panel-title { font-weight: 650; font-size: 14px; line-height: 1.2; }
+    .panel-subtitle { font-size: 12px; color: #555; margin-top: 3px; }
     .close-btn {
       width: auto;
       padding: 6px 10px;
@@ -105,6 +98,14 @@
       align-items: end;
       margin-top: 2px;
     }
+    .panel-controls .row4 {
+      grid-column: 1 / span 2;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr 1fr;
+      gap: 10px;
+      align-items: end;
+      margin-top: 2px;
+    }
     .checkbox-wrap {
       display: flex;
       gap: 8px;
@@ -116,10 +117,7 @@
     }
     .checkbox-wrap input { margin: 0; }
 
-    .panel-body {
-      padding: 12px;
-      overflow: auto;
-    }
+    .panel-body { padding: 12px; overflow: auto; }
 
     .card {
       border: 1px solid #eee;
@@ -127,26 +125,11 @@
       padding: 10px;
       margin-bottom: 12px;
     }
-    .card h3 {
-      font-size: 13px;
-      margin: 0 0 8px 0;
-    }
-    .small {
-      font-size: 12px;
-      color: #555;
-    }
+    .card h3 { font-size: 13px; margin: 0 0 8px 0; }
+    .small { font-size: 12px; color: #555; }
 
-    .events {
-      max-height: 300px;
-      overflow: auto;
-      border: 1px solid #eee;
-      border-radius: 10px;
-    }
-    .event-item {
-      padding: 10px;
-      border-bottom: 1px solid #f0f0f0;
-      font-size: 12px;
-    }
+    .events { max-height: 290px; overflow: auto; border: 1px solid #eee; border-radius: 10px; }
+    .event-item { padding: 10px; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
     .event-item:last-child { border-bottom: none; }
     .event-top { display: flex; justify-content: space-between; gap: 10px; }
     .event-cause { color: #555; margin-top: 4px; }
@@ -163,7 +146,6 @@
     .legend-title { font-weight: 650; margin-bottom: 8px; }
     .legend-row { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
     .swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.15); }
-    .muted { color: #666; }
 
     .pill {
       display: inline-block;
@@ -180,7 +162,6 @@
 <body>
   <div id="map"></div>
 
-  <!-- Top controls -->
   <div class="topbar">
     <div style="font-weight:650; font-size:14px;">Flood Damages on Map</div>
     <div class="status" id="status">Loading…</div>
@@ -200,12 +181,9 @@
       <button id="clearBtn" class="secondary" disabled>Clear country selection</button>
     </div>
 
-    <div class="status muted">
-      Click a country to view a time series and event-level details (1985+).
-    </div>
+    <div class="status muted">Click a country to view a time series, event markers, and event-level details (1985+).</div>
   </div>
 
-  <!-- Right panel -->
   <div id="panel" class="panel hidden">
     <div class="panel-header">
       <div>
@@ -225,7 +203,7 @@
         <select id="endYear"></select>
       </div>
 
-      <div class="row3">
+      <div class="row4">
         <div class="checkbox-wrap">
           <input type="checkbox" id="showEvents" checked />
           <label for="showEvents" style="margin:0;">Show events</label>
@@ -235,16 +213,35 @@
           <select id="panelModel"></select>
         </div>
         <div>
+          <label for="metricSelect">Time series metric</label>
+          <select id="metricSelect"></select>
+        </div>
+        <div>
+          <label for="zoomEvents">Zoom to events</label>
+          <button id="zoomEvents" class="secondary">Zoom</button>
+        </div>
+      </div>
+
+      <div class="row3">
+        <div>
           <label for="panelYear">Highlight year</label>
           <select id="panelYear"></select>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="downloadCountry" class="secondary">Download country CSV</button>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="downloadYear" class="secondary">Download year summary</button>
         </div>
       </div>
     </div>
 
     <div class="panel-body">
       <div class="card">
-        <h3>Annual damages time series</h3>
-        <canvas id="tsChart" height="140"></canvas>
+        <h3>Annual time series</h3>
+        <canvas id="tsChart" height="150"></canvas>
         <div class="small" id="tsNote"></div>
       </div>
 
@@ -258,581 +255,731 @@
 
   <script>
     window.addEventListener("DOMContentLoaded", async () => {
-      /* ------------------- CONFIG ------------------- */
-      const PATH_COUNTRIES = "./data/countries.geojson";
-      const PATH_EVENTS_CSV = "./data/DFO21_damages_wt_EMDAT21.csv";
-
-      // Your CSV model columns:
-      const MODELS = [
-        { key: "lm_USD",   label: "MLR (lm_USD)" },
-        { key: "rf_USD",   label: "Random Forest (rf_USD)" },
-        { key: "xgb_USD",  label: "XGBoost (xgb_USD)" },
-        { key: "svr_USD",  label: "SVR (svr_USD)" },
-        { key: "brnn_USD", label: "BRNN (brnn_USD)" },
-        { key: "knn_USD",  label: "KNN (knn_USD)" }
-      ];
-
-      const MIN_YEAR = 1985;
-
-      /* ------------------- DOM ------------------- */
       const statusEl = document.getElementById("status");
-      const modelSelect = document.getElementById("modelSelect");
-      const yearSelect = document.getElementById("yearSelect");
-      const clearBtn = document.getElementById("clearBtn");
 
-      const panel = document.getElementById("panel");
-      const closePanel = document.getElementById("closePanel");
-      const panelTitle = document.getElementById("panelTitle");
-      const panelSubtitle = document.getElementById("panelSubtitle");
+      try {
+        /* ------------------- PATHS ------------------- */
+        const PATH_COUNTRIES = "./data/countries.geojson";
+        const PATH_EVENTS_CSV = "./data/DFO21_damages_wt_EMDAT21.csv";
 
-      const startYearSel = document.getElementById("startYear");
-      const endYearSel = document.getElementById("endYear");
-      const showEventsChk = document.getElementById("showEvents");
-      const panelModelSel = document.getElementById("panelModel");
-      const panelYearSel = document.getElementById("panelYear");
+        /* ------------------- MODELS ------------------- */
+        const MODELS = [
+          { key: "lm_USD",   label: "MLR (lm_USD)" },
+          { key: "rf_USD",   label: "Random Forest (rf_USD)" },
+          { key: "xgb_USD",  label: "XGBoost (xgb_USD)" },
+          { key: "svr_USD",  label: "SVR (svr_USD)" },
+          { key: "brnn_USD", label: "BRNN (brnn_USD)" },
+          { key: "knn_USD",  label: "KNN (knn_USD)" }
+        ];
 
-      const tsNote = document.getElementById("tsNote");
-      const eventSummary = document.getElementById("eventSummary");
-      const eventsList = document.getElementById("eventsList");
+        const METRICS = [
+          { key: "damages", label: "Damages (USD, model)" },
+          { key: "deaths_sum", label: "Deaths (sum)" },
+          { key: "area_sum", label: "Area (sum)" },
+          { key: "duration_mean", label: "Duration (mean)" },
+          { key: "event_count", label: "Event count" }
+        ];
 
-      /* ------------------- HELPERS ------------------- */
-      function normalizeName(s) {
-        return String(s ?? "")
-          .toLowerCase()
-          .trim()
-          .replace(/\s+/g, " ")
-          .replace(/[’'`"]/g, "")
-          .replace(/[\(\)\[\]\.,]/g, "");
-      }
+        const MIN_YEAR = 1985;
 
-      function parseYearFromBegan(began) {
-        // Began is "YYYY/MM/DD" in your CSV.
-        const m = String(began ?? "").match(/^(\d{4})\//);
-        if (!m) return null;
-        const y = Number(m[1]);
-        return Number.isFinite(y) ? y : null;
-      }
+        /* ------------------- DOM ------------------- */
+        const modelSelect = document.getElementById("modelSelect");
+        const yearSelect = document.getElementById("yearSelect");
+        const clearBtn = document.getElementById("clearBtn");
 
-      function safeNumber(x) {
-        const v = Number(String(x ?? "").replace(/,/g, ""));
-        return Number.isFinite(v) ? v : null;
-      }
+        const panel = document.getElementById("panel");
+        const closePanel = document.getElementById("closePanel");
+        const panelTitle = document.getElementById("panelTitle");
+        const panelSubtitle = document.getElementById("panelSubtitle");
 
-      function formatUSD(x) {
-        if (x == null) return "NA";
-        return new Intl.NumberFormat("en-US", {
-          notation: "compact",
-          maximumFractionDigits: 2
-        }).format(x);
-      }
+        const startYearSel = document.getElementById("startYear");
+        const endYearSel = document.getElementById("endYear");
+        const showEventsChk = document.getElementById("showEvents");
+        const panelModelSel = document.getElementById("panelModel");
+        const panelYearSel = document.getElementById("panelYear");
+        const metricSelect = document.getElementById("metricSelect");
+        const zoomEventsBtn = document.getElementById("zoomEvents");
+        const downloadCountryBtn = document.getElementById("downloadCountry");
+        const downloadYearBtn = document.getElementById("downloadYear");
 
-      function fmtInt(x) {
-        if (x == null) return "NA";
-        const v = Math.round(Number(x));
-        if (!Number.isFinite(v)) return "NA";
-        return new Intl.NumberFormat("en-US").format(v);
-      }
+        const tsNote = document.getElementById("tsNote");
+        const eventSummary = document.getElementById("eventSummary");
+        const eventsList = document.getElementById("eventsList");
 
-      /* -------- Legend thresholds (log-bucketed) --------
-         You can adjust these to your preferred bins.
-         These are annual totals in USD.
-      */
-      const BINS = [0, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11, 1e12, 1e13];
-      function getColor(v) {
-        if (v == null) return "#e0e0e0";
-        if (v > 1e13) return "#08306b";
-        if (v > 1e12) return "#08519c";
-        if (v > 1e11) return "#2171b5";
-        if (v > 1e10) return "#4292c6";
-        if (v > 1e9)  return "#6baed6";
-        if (v > 1e8)  return "#9ecae1";
-        if (v > 1e7)  return "#c6dbef";
-        if (v > 1e6)  return "#deebf7";
-        return "#f7fbff";
-      }
-      function binLabel(i) {
-        const a = BINS[i], b = BINS[i+1];
-        if (i === 0) return `< $${formatUSD(BINS[1])}`;
-        if (i === BINS.length - 2) return `> $${formatUSD(BINS[BINS.length - 1])}`;
-        return `$${formatUSD(a)} – $${formatUSD(b)}`;
-      }
-
-      /* ------------------- MAP ------------------- */
-      const map = L.map("map").setView([20, 0], 2);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "&copy; OpenStreetMap contributors"
-      }).addTo(map);
-
-      let legendControl = null;
-      function renderLegend(modelKey, year) {
-        if (legendControl) legendControl.remove();
-
-        legendControl = L.control({ position: "bottomleft" });
-        legendControl.onAdd = () => {
-          const div = L.DomUtil.create("div", "legend");
-          const modelLabel = MODELS.find(m => m.key === modelKey)?.label ?? modelKey;
-          div.innerHTML = `
-            <div class="legend-title">Annual flood damages</div>
-            <div class="muted" style="margin-bottom:8px;">
-              <span class="pill">${modelLabel}</span>
-              <span class="pill">Year ${year}</span>
-            </div>
-            <div class="muted" style="margin-bottom:6px;">USD (log buckets)</div>
-          `;
-          for (let i = 0; i < BINS.length - 1; i++) {
-            const mid = (BINS[i] + BINS[i+1]) / 2;
-            const color = getColor(mid);
-            const row = document.createElement("div");
-            row.className = "legend-row";
-            row.innerHTML = `<span class="swatch" style="background:${color}"></span><span>${binLabel(i)}</span>`;
-            div.appendChild(row);
-          }
-          const naRow = document.createElement("div");
-          naRow.className = "legend-row";
-          naRow.innerHTML = `<span class="swatch" style="background:#e0e0e0"></span><span>NA / no events</span>`;
-          div.appendChild(naRow);
-
-          return div;
-        };
-        legendControl.addTo(map);
-      }
-
-      /* ------------------- DATA STRUCTURES ------------------- */
-      // Countries (GeoJSON polygons)
-      statusEl.textContent = "Loading country boundaries…";
-      const geoRes = await fetch(PATH_COUNTRIES);
-      if (!geoRes.ok) throw new Error("Failed to load data/countries.geojson");
-      const countriesGeo = await geoRes.json();
-
-      // Events CSV (DFO)
-      statusEl.textContent = "Loading flood damage events (CSV)…";
-      const csvText = await (await fetch(PATH_EVENTS_CSV)).text();
-      const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-      const rows = parsed.data;
-
-      // Build:
-      //   byCountryNorm: {
-      //     displayName,
-      //     events: [{year, began, ended, cause, lat, lon, duration, deaths, area, models:{...}}],
-      //     yearly: { [year]: { [modelKey]: sumUSD, eventsCount } }
-      //   }
-      const byCountryNorm = new Map();
-      const yearSet = new Set();
-
-      for (const r of rows) {
-        const cName = String(r.country ?? "").trim();
-        if (!cName) continue;
-
-        const y = parseYearFromBegan(r.Began);
-        if (!y || y < MIN_YEAR) continue;
-
-        yearSet.add(y);
-
-        const key = normalizeName(cName);
-        if (!byCountryNorm.has(key)) {
-          byCountryNorm.set(key, { displayName: cName, events: [], yearly: {} });
-        }
-        const entry = byCountryNorm.get(key);
-
-        const models = {};
-        for (const m of MODELS) {
-          models[m.key] = safeNumber(r[m.key]);
+        /* ------------------- HELPERS ------------------- */
+        function normalizeName(s) {
+          return String(s ?? "")
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, " ")
+            .replace(/[’'`"]/g, "")
+            .replace(/[\(\)\[\]\.,]/g, "");
         }
 
-        entry.events.push({
-          country: cName,
-          year: y,
-          began: r.Began,
-          ended: r.Ended,
-          cause: r.MainCause,
-          lat: safeNumber(r.lat),
-          lon: safeNumber(r.lon),
-          duration: safeNumber(r.duration),
-          deaths: safeNumber(r.deaths),
-          area: safeNumber(r.area),
-          models
-        });
-
-        if (!entry.yearly[y]) {
-          entry.yearly[y] = { eventsCount: 0 };
-          for (const m of MODELS) entry.yearly[y][m.key] = 0;
-        }
-        entry.yearly[y].eventsCount += 1;
-        for (const m of MODELS) {
-          const v = models[m.key];
-          if (v != null) entry.yearly[y][m.key] += v;
-        }
-      }
-
-      const years = Array.from(yearSet).sort((a,b) => a-b);
-      const minDataYear = years.length ? years[0] : MIN_YEAR;
-      const maxDataYear = years.length ? years[years.length - 1] : MIN_YEAR;
-
-      /* ------------------- UI INIT ------------------- */
-      function addOptions(selectEl, arr, selected) {
-        selectEl.innerHTML = "";
-        for (const v of arr) {
-          const opt = document.createElement("option");
-          opt.value = String(v);
-          opt.textContent = String(v);
-          selectEl.appendChild(opt);
-        }
-        if (selected != null) selectEl.value = String(selected);
-      }
-
-      for (const m of MODELS) {
-        const opt = document.createElement("option");
-        opt.value = m.key;
-        opt.textContent = m.label;
-        modelSelect.appendChild(opt);
-
-        const opt2 = document.createElement("option");
-        opt2.value = m.key;
-        opt2.textContent = m.label;
-        panelModelSel.appendChild(opt2);
-      }
-
-      const defaultModel = "rf_USD";
-      const defaultYear = years.includes(2020) ? 2020 : maxDataYear;
-
-      addOptions(yearSelect, years, defaultYear);
-      addOptions(panelYearSel, years, defaultYear);
-
-      addOptions(startYearSel, years, minDataYear);
-      addOptions(endYearSel, years, maxDataYear);
-
-      modelSelect.value = defaultModel;
-      panelModelSel.value = defaultModel;
-
-      modelSelect.disabled = false;
-      yearSelect.disabled = false;
-      clearBtn.disabled = false;
-
-      statusEl.textContent = "Ready.";
-
-      /* ------------------- COUNTRY JOIN (GeoJSON -> CSV) -------------------
-         We join by normalized names:
-           GeoJSON: ADMIN or NAME
-           CSV:     country
-         If your countries.geojson uses different name fields, edit in getCountryName().
-      */
-      function getCountryName(feature) {
-        return feature.properties?.ADMIN || feature.properties?.NAME || feature.properties?.NAME_EN || "";
-      }
-
-      // Map geo feature -> normalized CSV key
-      function getCountryKeyFromFeature(feature) {
-        const n = getCountryName(feature);
-        return normalizeName(n);
-      }
-
-      /* ------------------- LAYERS ------------------- */
-      let selectedFeatureLayer = null;
-      let selectedCountryKey = null;
-      let countriesLayer = null;
-
-      const eventsLayer = L.layerGroup().addTo(map); // event markers for selected country
-
-      function inPanelYearRange(y) {
-        const a = Number(startYearSel.value);
-        const b = Number(endYearSel.value);
-        return y >= a && y <= b;
-      }
-
-      function currentMapModel() { return modelSelect.value; }
-      function currentMapYear() { return Number(yearSelect.value); }
-
-      function currentPanelModel() { return panelModelSel.value; }
-      function currentPanelYear() { return Number(panelYearSel.value); }
-
-      function getAnnualValue(countryKey, year, modelKey) {
-        const entry = byCountryNorm.get(countryKey);
-        if (!entry) return null;
-        const yr = entry.yearly[year];
-        if (!yr) return null;
-        const v = yr[modelKey];
-        return (v == null || !Number.isFinite(v) || v === 0) ? null : v;
-      }
-
-      function styleCountry(feature) {
-        const key = getCountryKeyFromFeature(feature);
-        const v = getAnnualValue(key, currentMapYear(), currentMapModel());
-        return {
-          weight: 0.6,
-          color: "#666",
-          fillOpacity: 0.78,
-          fillColor: getColor(v)
-        };
-      }
-
-      function highlight(layer) { layer.setStyle({ weight: 2.2 }); }
-      function unhighlight(layer) { layer.setStyle({ weight: 0.6 }); }
-
-      function resetSelection() {
-        selectedCountryKey = null;
-        selectedFeatureLayer = null;
-        eventsLayer.clearLayers();
-        panel.classList.add("hidden");
-        if (countriesLayer) countriesLayer.resetStyle();
-      }
-
-      clearBtn.addEventListener("click", resetSelection);
-      closePanel.addEventListener("click", resetSelection);
-
-      /* ------------------- CHART ------------------- */
-      let chart = null;
-
-      function buildTimeSeries(countryKey, modelKey) {
-        const entry = byCountryNorm.get(countryKey);
-        const xs = [];
-        const ys = [];
-        const counts = [];
-
-        for (const y of years) {
-          xs.push(y);
-          const val = entry?.yearly?.[y]?.[modelKey] ?? 0;
-          ys.push(Number.isFinite(val) ? val : 0);
-          counts.push(entry?.yearly?.[y]?.eventsCount ?? 0);
-        }
-        return { xs, ys, counts };
-      }
-
-      function renderChart(countryKey) {
-        const modelKey = currentPanelModel();
-        const { xs, ys, counts } = buildTimeSeries(countryKey, modelKey);
-
-        const ctx = document.getElementById("tsChart").getContext("2d");
-        if (chart) chart.destroy();
-
-        chart = new Chart(ctx, {
-          type: "line",
-          data: {
-            labels: xs,
-            datasets: [{
-              label: "Annual damages (USD)",
-              data: ys,
-              borderWidth: 2,
-              pointRadius: 0,
-              tension: 0.15
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: "index", intersect: false },
-            scales: {
-              y: {
-                ticks: {
-                  callback: (v) => {
-                    // v is numeric axis tick
-                    const n = Number(v);
-                    if (!Number.isFinite(n)) return v;
-                    return formatUSD(n);
-                  }
-                }
-              }
-            },
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: (ctx) => `Damages: ${formatUSD(ctx.parsed.y)}`
-                }
-              }
-            }
-          }
-        });
-
-        // note
-        const totalEvents = byCountryNorm.get(countryKey)?.events?.length ?? 0;
-        const totalDamage = ys.reduce((a,b) => a + (Number.isFinite(b) ? b : 0), 0);
-        tsNote.innerHTML = `
-          <span class="pill">${MODELS.find(m => m.key === modelKey)?.label ?? modelKey}</span>
-          <span class="pill">Events: ${fmtInt(totalEvents)}</span>
-          <span class="pill">Sum (all years): $${formatUSD(totalDamage)}</span>
-        `;
-      }
-
-      /* ------------------- EVENTS MARKERS + LIST ------------------- */
-      function renderEvents(countryKey) {
-        eventsLayer.clearLayers();
-
-        const entry = byCountryNorm.get(countryKey);
-        if (!entry) {
-          eventSummary.textContent = "No matching event data found for this country.";
-          eventsList.innerHTML = "";
-          return;
+        function parseYearFromBegan(began) {
+          const m = String(began ?? "").match(/^(\d{4})\//);
+          if (!m) return null;
+          const y = Number(m[1]);
+          return Number.isFinite(y) ? y : null;
         }
 
-        const modelKey = currentPanelModel();
-        const y0 = Number(startYearSel.value);
-        const y1 = Number(endYearSel.value);
-
-        // Filter events
-        const ev = entry.events
-          .filter(e => e.year >= y0 && e.year <= y1)
-          .sort((a,b) => (a.year - b.year) || String(a.began).localeCompare(String(b.began)));
-
-        // Summary
-        let sum = 0;
-        let withVal = 0;
-        for (const e of ev) {
-          const v = e.models[modelKey];
-          if (v != null) { sum += v; withVal++; }
-        }
-        eventSummary.innerHTML = `
-          <span class="pill">Years: ${y0}–${y1}</span>
-          <span class="pill">Events: ${fmtInt(ev.length)}</span>
-          <span class="pill">Sum: $${formatUSD(sum)}</span>
-        `;
-
-        // Markers (optional)
-        if (showEventsChk.checked) {
-          for (const e of ev) {
-            if (e.lat == null || e.lon == null) continue;
-            const v = e.models[modelKey];
-            const popup = `
-              <b>${entry.displayName}</b><br/>
-              <b>${e.began}</b> → ${e.ended}<br/>
-              Cause: ${e.cause ?? "NA"}<br/>
-              Damages (${modelKey}): $${formatUSD(v)}<br/>
-              Deaths: ${fmtInt(e.deaths)}<br/>
-              Area: ${formatUSD(e.area)} (raw units)
-            `;
-            const marker = L.circleMarker([e.lat, e.lon], {
-              radius: 5,
-              weight: 1,
-              fillOpacity: 0.75
-            }).bindPopup(popup);
-            eventsLayer.addLayer(marker);
-          }
+        function safeNumber(x) {
+          const v = Number(String(x ?? "").replace(/,/g, ""));
+          return Number.isFinite(v) ? v : null;
         }
 
-        // Event list (all rows, scrollable)
-        const html = ev.map(e => {
-          const v = e.models[modelKey];
-          return `
-            <div class="event-item">
-              <div class="event-top">
-                <div><b>${e.began}</b> → ${e.ended}</div>
-                <div><b>$${formatUSD(v)}</b></div>
-              </div>
-              <div class="event-cause">Cause: ${e.cause ?? "NA"}</div>
-              <div class="event-meta">
-                Deaths: ${fmtInt(e.deaths)} · Duration: ${fmtInt(e.duration)} · Area: ${formatUSD(e.area)}
-              </div>
-            </div>
-          `;
-        }).join("");
+        function fmtInt(x) {
+          if (x == null) return "NA";
+          const v = Math.round(Number(x));
+          if (!Number.isFinite(v)) return "NA";
+          return new Intl.NumberFormat("en-US").format(v);
+        }
 
-        eventsList.innerHTML = html || `<div class="event-item">No events in selected year range.</div>`;
-      }
+        function formatUSD(x) {
+          if (x == null) return "NA";
+          return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(x);
+        }
 
-      /* ------------------- PANEL UPDATE ------------------- */
-      function openPanelForCountry(countryKey, countryLabel) {
-        selectedCountryKey = countryKey;
-        panelTitle.textContent = countryLabel || (byCountryNorm.get(countryKey)?.displayName ?? "Country");
-        panelSubtitle.textContent = `Click legend + controls to explore models and time window.`;
+        function downloadText(filename, text) {
+          const blob = new Blob([text], { type: "text/csv;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        }
 
-        panel.classList.remove("hidden");
+        /* ------------------- COLOR BINS ------------------- */
+        const BINS = [0, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11, 1e12, 1e13];
+        function getColor(v) {
+          if (v == null) return "#e0e0e0";
+          if (v > 1e13) return "#08306b";
+          if (v > 1e12) return "#08519c";
+          if (v > 1e11) return "#2171b5";
+          if (v > 1e10) return "#4292c6";
+          if (v > 1e9)  return "#6baed6";
+          if (v > 1e8)  return "#9ecae1";
+          if (v > 1e7)  return "#c6dbef";
+          if (v > 1e6)  return "#deebf7";
+          return "#f7fbff";
+        }
+        function binLabel(i) {
+          const a = BINS[i], b = BINS[i+1];
+          if (i === 0) return `< $${formatUSD(BINS[1])}`;
+          if (i === BINS.length - 2) return `> $${formatUSD(BINS[BINS.length - 1])}`;
+          return `$${formatUSD(a)} – $${formatUSD(b)}`;
+        }
 
-        // Keep panel controls in sync with map controls by default
-        panelModelSel.value = modelSelect.value;
-        panelYearSel.value = yearSelect.value;
-
-        renderChart(countryKey);
-        renderEvents(countryKey);
-      }
-
-      function refreshPanelIfOpen() {
-        if (!selectedCountryKey) return;
-        renderChart(selectedCountryKey);
-        renderEvents(selectedCountryKey);
-      }
-
-      // Panel control hooks
-      startYearSel.addEventListener("change", () => {
-        if (Number(startYearSel.value) > Number(endYearSel.value)) startYearSel.value = endYearSel.value;
-        refreshPanelIfOpen();
-      });
-      endYearSel.addEventListener("change", () => {
-        if (Number(endYearSel.value) < Number(startYearSel.value)) endYearSel.value = startYearSel.value;
-        refreshPanelIfOpen();
-      });
-      showEventsChk.addEventListener("change", refreshPanelIfOpen);
-      panelModelSel.addEventListener("change", refreshPanelIfOpen);
-      panelYearSel.addEventListener("change", () => {
-        // Highlight year in map dropdown as well (optional synchronization)
-        // If you prefer not to sync, remove the next two lines.
-        yearSelect.value = panelYearSel.value;
-        updateMap();
-      });
-
-      /* ------------------- COUNTRY LAYER EVENTS ------------------- */
-      function onEachCountry(feature, layer) {
-        layer.on("mouseover", () => highlight(layer));
-        layer.on("mouseout", () => {
-          if (selectedFeatureLayer && layer === selectedFeatureLayer) {
-            layer.setStyle({ weight: 2.2 });
-          } else {
-            unhighlight(layer);
-          }
-        });
-
-        layer.on("click", () => {
-          if (countriesLayer) countriesLayer.resetStyle();
-          selectedFeatureLayer = layer;
-          layer.setStyle({ weight: 2.2 });
-
-          const key = getCountryKeyFromFeature(feature);
-          const label = getCountryName(feature);
-
-          openPanelForCountry(key, label);
-        });
-
-        // Tooltip/popup for quick map info
-        layer.bindTooltip(() => {
-          const key = getCountryKeyFromFeature(feature);
-          const v = getAnnualValue(key, currentMapYear(), currentMapModel());
-          const nm = getCountryName(feature) || "Country";
-          return `<b>${nm}</b><br/>${currentMapYear()} · ${currentMapModel()}: $${formatUSD(v)}`;
-        }, { sticky: true });
-      }
-
-      /* ------------------- MAP UPDATE ------------------- */
-      function updateMap() {
-        if (countriesLayer) countriesLayer.remove();
-        countriesLayer = L.geoJSON(countriesGeo, {
-          style: styleCountry,
-          onEachFeature: onEachCountry
+        /* ------------------- MAP ------------------- */
+        const map = L.map("map").setView([20, 0], 2);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors"
         }).addTo(map);
 
-        renderLegend(currentMapModel(), currentMapYear());
+        let legendControl = null;
+        function renderLegend(modelKey, year) {
+          if (legendControl) legendControl.remove();
+          legendControl = L.control({ position: "bottomleft" });
+          legendControl.onAdd = () => {
+            const div = L.DomUtil.create("div", "legend");
+            const modelLabel = MODELS.find(m => m.key === modelKey)?.label ?? modelKey;
+            div.innerHTML = `
+              <div class="legend-title">Annual flood damages</div>
+              <div class="muted" style="margin-bottom:8px;">
+                <span class="pill">${modelLabel}</span>
+                <span class="pill">Year ${year}</span>
+              </div>
+              <div class="muted" style="margin-bottom:6px;">USD (log buckets)</div>
+            `;
+            for (let i = 0; i < BINS.length - 1; i++) {
+              const mid = (BINS[i] + BINS[i+1]) / 2;
+              const row = document.createElement("div");
+              row.className = "legend-row";
+              row.innerHTML = `<span class="swatch" style="background:${getColor(mid)}"></span><span>${binLabel(i)}</span>`;
+              div.appendChild(row);
+            }
+            const naRow = document.createElement("div");
+            naRow.className = "legend-row";
+            naRow.innerHTML = `<span class="swatch" style="background:#e0e0e0"></span><span>NA / no events</span>`;
+            div.appendChild(naRow);
+            return div;
+          };
+          legendControl.addTo(map);
+        }
 
-        // Keep panel highlight dropdown aligned with map year selector
-        panelYearSel.value = yearSelect.value;
+        /* ------------------- LOAD COUNTRIES GEOJSON ------------------- */
+        statusEl.textContent = "Loading country boundaries…";
+        const geoRes = await fetch(PATH_COUNTRIES, { cache: "no-store" });
+        if (!geoRes.ok) throw new Error(`countries.geojson not found (${geoRes.status}) at ${PATH_COUNTRIES}`);
+        const countriesGeo = await geoRes.json();
 
-        // If a country is selected, refresh panel (model may have changed) and markers
-        refreshPanelIfOpen();
-      }
+        // Build join helpers from GeoJSON
+        const iso3Set = new Set();
+        const iso3ByName = new Map();      // normalized ADMIN/NAME -> ISO3
+        const nameByIso3 = new Map();      // ISO3 -> ADMIN (display)
+        const featureByIso3 = new Map();   // ISO3 -> feature
 
-      modelSelect.addEventListener("change", () => {
-        // Keep panel model aligned with map model selector (optional synchronization)
-        panelModelSel.value = modelSelect.value;
+        function getCountryName(feature) {
+          return feature.properties?.ADMIN || feature.properties?.NAME || feature.properties?.NAME_EN || "";
+        }
+        function getISO3(feature) {
+          // Most world country GeoJSONs (Natural Earth) use ISO_A3
+          return String(feature.properties?.ISO_A3 || feature.properties?.ADM0_A3 || feature.properties?.ISO3 || "").trim();
+        }
+
+        for (const f of (countriesGeo.features || [])) {
+          const iso3 = getISO3(f);
+          const nm = getCountryName(f);
+          if (iso3 && iso3 !== "-99") {
+            iso3Set.add(iso3);
+            nameByIso3.set(iso3, nm || iso3);
+            featureByIso3.set(iso3, f);
+          }
+          const n1 = normalizeName(nm);
+          if (n1 && iso3 && iso3 !== "-99") iso3ByName.set(n1, iso3);
+
+          const n2 = normalizeName(f.properties?.NAME || "");
+          if (n2 && iso3 && iso3 !== "-99") iso3ByName.set(n2, iso3);
+
+          const n3 = normalizeName(f.properties?.FORMAL_EN || "");
+          if (n3 && iso3 && iso3 !== "-99") iso3ByName.set(n3, iso3);
+        }
+
+        // Minimal alias table for common mismatches (extend as needed)
+        const ISO_ALIAS = new Map([
+          ["usa", "USA"],
+          ["us", "USA"],
+          ["uk", "GBR"],
+          ["u k", "GBR"],
+          ["united kingdom", "GBR"],
+          ["russia", "RUS"],
+          ["iran", "IRN"],
+          ["syria", "SYR"],
+          ["venezuela", "VEN"],
+          ["bolivia", "BOL"],
+          ["tanzania", "TZA"],
+          ["vietnam", "VNM"],
+          ["laos", "LAO"],
+          ["cote divoire", "CIV"],
+          ["ivory coast", "CIV"],
+          ["south korea", "KOR"],
+          ["north korea", "PRK"],
+          ["democratic republic of congo", "COD"],
+          ["republic of congo", "COG"],
+          ["czech republic", "CZE"],
+          ["slovakia", "SVK"]
+        ]);
+
+        function resolveISO3FromCSVCountry(countryStr) {
+          const raw = String(countryStr ?? "").trim();
+          if (!raw) return null;
+
+          // If already ISO3
+          if (raw.length === 3 && iso3Set.has(raw.toUpperCase())) return raw.toUpperCase();
+
+          const n = normalizeName(raw);
+
+          // Alias to ISO3
+          if (ISO_ALIAS.has(n)) return ISO_ALIAS.get(n);
+
+          // Name match to ISO3 via GeoJSON name index
+          if (iso3ByName.has(n)) return iso3ByName.get(n);
+
+          // If CSV uses ISO3 but lowercase etc.
+          const maybe = raw.toUpperCase();
+          if (maybe.length === 3 && iso3Set.has(maybe)) return maybe;
+
+          return null;
+        }
+
+        /* ------------------- LOAD EVENTS CSV ------------------- */
+        statusEl.textContent = "Loading flood damage events (CSV)…";
+        const csvText = await (await fetch(PATH_EVENTS_CSV, { cache: "no-store" })).text();
+        const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+        const rows = parsed.data;
+        const csvColumns = parsed.meta?.fields || Object.keys(rows[0] || {});
+
+        // Build by ISO3
+        // byIso3.get(iso3) = { iso3, name, events[], yearly[year]{ damagesByModel..., deaths_sum, area_sum, duration_sum, duration_n, event_count } }
+        const byIso3 = new Map();
+        const yearSet = new Set();
+        let unmatched = 0;
+
+        for (const r of rows) {
+          const y = parseYearFromBegan(r.Began);
+          if (!y || y < MIN_YEAR) continue;
+
+          const iso3 = resolveISO3FromCSVCountry(r.country);
+          if (!iso3) { unmatched++; continue; }
+
+          yearSet.add(y);
+
+          if (!byIso3.has(iso3)) {
+            byIso3.set(iso3, { iso3, name: nameByIso3.get(iso3) || iso3, events: [], yearly: {} });
+          }
+          const entry = byIso3.get(iso3);
+
+          const models = {};
+          for (const m of MODELS) models[m.key] = safeNumber(r[m.key]);
+
+          const deaths = safeNumber(r.deaths);
+          const area = safeNumber(r.area);
+          const duration = safeNumber(r.duration);
+
+          entry.events.push({
+            iso3,
+            year: y,
+            began: r.Began,
+            ended: r.Ended,
+            cause: r.MainCause,
+            lat: safeNumber(r.lat),
+            lon: safeNumber(r.lon),
+            rawRow: r,
+            models,
+            deaths,
+            area,
+            duration
+          });
+
+          if (!entry.yearly[y]) {
+            entry.yearly[y] = {
+              event_count: 0,
+              deaths_sum: 0,
+              area_sum: 0,
+              duration_sum: 0,
+              duration_n: 0
+            };
+            for (const m of MODELS) entry.yearly[y][m.key] = 0;
+          }
+
+          entry.yearly[y].event_count += 1;
+          if (deaths != null) entry.yearly[y].deaths_sum += deaths;
+          if (area != null) entry.yearly[y].area_sum += area;
+          if (duration != null) {
+            entry.yearly[y].duration_sum += duration;
+            entry.yearly[y].duration_n += 1;
+          }
+          for (const m of MODELS) {
+            const v = models[m.key];
+            if (v != null) entry.yearly[y][m.key] += v;
+          }
+        }
+
+        const years = Array.from(yearSet).sort((a,b) => a-b);
+        if (!years.length) throw new Error("No usable events found (check CSV path/format).");
+
+        /* ------------------- UI INIT ------------------- */
+        function addOptions(selectEl, values, selected) {
+          selectEl.innerHTML = "";
+          for (const v of values) selectEl.appendChild(new Option(String(v), String(v)));
+          if (selected != null) selectEl.value = String(selected);
+        }
+
+        for (const m of MODELS) {
+          modelSelect.appendChild(new Option(m.label, m.key));
+          panelModelSel.appendChild(new Option(m.label, m.key));
+        }
+        for (const met of METRICS) metricSelect.appendChild(new Option(met.label, met.key));
+
+        const defaultModel = "rf_USD";
+        const defaultYear = years.includes(2021) ? 2021 : (years.includes(2020) ? 2020 : years[years.length - 1]);
+
+        addOptions(yearSelect, years, defaultYear);
+        addOptions(panelYearSel, years, defaultYear);
+        addOptions(startYearSel, years, years[0]);
+        addOptions(endYearSel, years, years[years.length - 1]);
+
+        modelSelect.value = defaultModel;
+        panelModelSel.value = defaultModel;
+        metricSelect.value = "damages";
+
+        modelSelect.disabled = false;
+        yearSelect.disabled = false;
+        clearBtn.disabled = false;
+
+        statusEl.textContent = `Ready. Parsed ${rows.length} rows. Unmatched countries: ${unmatched}.`;
+
+        /* ------------------- MAP LAYERS ------------------- */
+        const eventsLayer = L.layerGroup().addTo(map);
+        let countriesLayer = null;
+        let selectedIso3 = null;
+        let selectedFeatureLayer = null;
+
+        function currentMapModel() { return modelSelect.value; }
+        function currentMapYear() { return Number(yearSelect.value); }
+
+        function getAnnualDamage(iso3, year, modelKey) {
+          const e = byIso3.get(iso3);
+          const yr = e?.yearly?.[year];
+          const v = yr?.[modelKey];
+          return (v == null || !Number.isFinite(v) || v === 0) ? null : v;
+        }
+
+        function styleCountry(feature) {
+          const iso3 = getISO3(feature);
+          const v = (iso3 && iso3 !== "-99") ? getAnnualDamage(iso3, currentMapYear(), currentMapModel()) : null;
+          return { weight: 0.6, color: "#666", fillOpacity: 0.78, fillColor: getColor(v) };
+        }
+
+        function highlight(layer) { layer.setStyle({ weight: 2.2 }); }
+        function unhighlight(layer) { layer.setStyle({ weight: 0.6 }); }
+
+        function resetSelection() {
+          selectedIso3 = null;
+          selectedFeatureLayer = null;
+          eventsLayer.clearLayers();
+          panel.classList.add("hidden");
+          if (countriesLayer) countriesLayer.resetStyle();
+        }
+
+        clearBtn.addEventListener("click", resetSelection);
+        closePanel.addEventListener("click", resetSelection);
+
+        /* ------------------- CHART ------------------- */
+        let chart = null;
+
+        function seriesFor(iso3, metricKey, modelKey) {
+          const entry = byIso3.get(iso3);
+          const xs = years.slice();
+          const ys = [];
+
+          for (const y of xs) {
+            const yr = entry?.yearly?.[y];
+
+            if (!yr) { ys.push(0); continue; }
+
+            if (metricKey === "damages") {
+              ys.push(yr[modelKey] ?? 0);
+            } else if (metricKey === "deaths_sum") {
+              ys.push(yr.deaths_sum ?? 0);
+            } else if (metricKey === "area_sum") {
+              ys.push(yr.area_sum ?? 0);
+            } else if (metricKey === "duration_mean") {
+              const n = yr.duration_n ?? 0;
+              ys.push(n > 0 ? (yr.duration_sum / n) : 0);
+            } else if (metricKey === "event_count") {
+              ys.push(yr.event_count ?? 0);
+            } else {
+              ys.push(0);
+            }
+          }
+
+          return { xs, ys };
+        }
+
+        function yTickFormat(metricKey, v) {
+          const n = Number(v);
+          if (!Number.isFinite(n)) return v;
+
+          if (metricKey === "damages") return formatUSD(n);
+          if (metricKey === "deaths_sum") return fmtInt(n);
+          if (metricKey === "area_sum") return formatUSD(n);
+          if (metricKey === "duration_mean") return n.toFixed(1);
+          if (metricKey === "event_count") return fmtInt(n);
+          return String(v);
+        }
+
+        function renderChart(iso3) {
+          const modelKey = panelModelSel.value;
+          const metricKey = metricSelect.value;
+          const { xs, ys } = seriesFor(iso3, metricKey, modelKey);
+
+          const ctx = document.getElementById("tsChart").getContext("2d");
+          if (chart) chart.destroy();
+
+          const metricLabel = METRICS.find(m => m.key === metricKey)?.label ?? metricKey;
+          const modelLabel = MODELS.find(m => m.key === modelKey)?.label ?? modelKey;
+
+          chart = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: xs,
+              datasets: [{
+                label: metricKey === "damages" ? `${metricLabel} — ${modelLabel}` : metricLabel,
+                data: ys,
+                borderWidth: 2,
+                pointRadius: 0,
+                tension: 0.15
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { mode: "index", intersect: false },
+              scales: {
+                y: {
+                  ticks: { callback: (v) => yTickFormat(metricKey, v) }
+                }
+              },
+              plugins: { legend: { display: false } }
+            }
+          });
+
+          const entry = byIso3.get(iso3);
+          const totalEvents = entry?.events?.length ?? 0;
+          const sumDam = ys.reduce((a,b) => a + (Number.isFinite(b) ? b : 0), 0);
+
+          tsNote.innerHTML = `
+            <span class="pill">ISO3: ${iso3}</span>
+            <span class="pill">Events: ${fmtInt(totalEvents)}</span>
+            ${metricKey === "damages" ? `<span class="pill">Sum: $${formatUSD(sumDam)}</span>` : ""}
+          `;
+        }
+
+        /* ------------------- EVENTS MARKERS + LIST ------------------- */
+        function inRange(y) {
+          const a = Number(startYearSel.value);
+          const b = Number(endYearSel.value);
+          return y >= a && y <= b;
+        }
+
+        function renderEvents(iso3) {
+          eventsLayer.clearLayers();
+
+          const entry = byIso3.get(iso3);
+          if (!entry) {
+            eventSummary.textContent = "No event data for this ISO3.";
+            eventsList.innerHTML = "";
+            return;
+          }
+
+          const modelKey = panelModelSel.value;
+          const ev = entry.events
+            .filter(e => inRange(e.year))
+            .sort((a,b) => (a.year - b.year) || String(a.began).localeCompare(String(b.began)));
+
+          let sum = 0;
+          let nDam = 0;
+          for (const e of ev) {
+            const v = e.models[modelKey];
+            if (v != null) { sum += v; nDam++; }
+          }
+
+          eventSummary.innerHTML = `
+            <span class="pill">Years: ${startYearSel.value}–${endYearSel.value}</span>
+            <span class="pill">Events: ${fmtInt(ev.length)}</span>
+            <span class="pill">Damages sum: $${formatUSD(sum)}</span>
+          `;
+
+          // Markers
+          if (showEventsChk.checked) {
+            for (const e of ev) {
+              if (e.lat == null || e.lon == null) continue;
+              const v = e.models[modelKey];
+              L.circleMarker([e.lat, e.lon], { radius: 5, weight: 1, fillOpacity: 0.75 })
+                .bindPopup(
+                  `<b>${entry.name}</b><br/>
+                   <b>${e.began}</b> → ${e.ended}<br/>
+                   Cause: ${e.cause ?? "NA"}<br/>
+                   Damages (${modelKey}): $${formatUSD(v)}<br/>
+                   Deaths: ${fmtInt(e.deaths)}<br/>
+                   Duration: ${fmtInt(e.duration)}<br/>
+                   Area: ${formatUSD(e.area)}`
+                )
+                .addTo(eventsLayer);
+            }
+          }
+
+          // List
+          eventsList.innerHTML = ev.map(e => {
+            const v = e.models[modelKey];
+            return `
+              <div class="event-item">
+                <div class="event-top">
+                  <div><b>${e.began}</b> → ${e.ended}</div>
+                  <div><b>$${formatUSD(v)}</b></div>
+                </div>
+                <div class="event-cause">Cause: ${e.cause ?? "NA"}</div>
+                <div class="event-meta">
+                  Deaths: ${fmtInt(e.deaths)} · Duration: ${fmtInt(e.duration)} · Area: ${formatUSD(e.area)}
+                </div>
+              </div>
+            `;
+          }).join("") || `<div class="event-item">No events in selected year range.</div>`;
+        }
+
+        function zoomToEventMarkers() {
+          if (!eventsLayer || eventsLayer.getLayers().length === 0) return;
+          try {
+            const group = L.featureGroup(eventsLayer.getLayers());
+            map.fitBounds(group.getBounds().pad(0.2));
+          } catch (e) {}
+        }
+
+        zoomEventsBtn.addEventListener("click", zoomToEventMarkers);
+
+        /* ------------------- DOWNLOADS ------------------- */
+        function downloadCountryCSV(iso3) {
+          const entry = byIso3.get(iso3);
+          if (!entry) return;
+
+          // keep all original columns, add iso3 and event_year
+          const cols = [...csvColumns];
+          if (!cols.includes("iso3")) cols.push("iso3");
+          if (!cols.includes("event_year")) cols.push("event_year");
+
+          const lines = [];
+          lines.push(cols.map(c => `"${String(c).replace(/"/g,'""')}"`).join(","));
+
+          for (const e of entry.events) {
+            const r = e.rawRow || {};
+            const row = cols.map(c => {
+              let val = "";
+              if (c === "iso3") val = iso3;
+              else if (c === "event_year") val = e.year;
+              else val = (r[c] ?? "");
+              return `"${String(val).replace(/"/g,'""')}"`;
+            }).join(",");
+            lines.push(row);
+          }
+
+          downloadText(`flood_events_${iso3}.csv`, lines.join("\n"));
+        }
+
+        function downloadCountryYearSummary(iso3) {
+          const entry = byIso3.get(iso3);
+          if (!entry) return;
+
+          const modelKey = panelModelSel.value;
+          const header = ["iso3","country","year","event_count","deaths_sum","area_sum","duration_mean",modelKey].join(",");
+          const lines = [header];
+
+          for (const y of years) {
+            const yr = entry.yearly?.[y];
+            if (!yr) continue;
+            const durMean = (yr.duration_n ?? 0) > 0 ? (yr.duration_sum / yr.duration_n) : "";
+            const vals = [
+              iso3,
+              entry.name,
+              y,
+              yr.event_count ?? "",
+              yr.deaths_sum ?? "",
+              yr.area_sum ?? "",
+              durMean,
+              yr[modelKey] ?? ""
+            ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(",");
+            lines.push(vals);
+          }
+
+          downloadText(`country_year_summary_${iso3}_${modelKey}.csv`, lines.join("\n"));
+        }
+
+        downloadCountryBtn.addEventListener("click", () => {
+          if (!selectedIso3) return;
+          downloadCountryCSV(selectedIso3);
+        });
+
+        downloadYearBtn.addEventListener("click", () => {
+          if (!selectedIso3) return;
+          downloadCountryYearSummary(selectedIso3);
+        });
+
+        /* ------------------- PANEL OPEN/REFRESH ------------------- */
+        function openPanel(iso3) {
+          selectedIso3 = iso3;
+
+          panelTitle.textContent = nameByIso3.get(iso3) || iso3;
+          const entry = byIso3.get(iso3);
+          panelSubtitle.textContent = entry
+            ? `Events: ${fmtInt(entry.events.length)} · ISO3: ${iso3}`
+            : `ISO3: ${iso3}`;
+
+          panel.classList.remove("hidden");
+
+          // Sync panel defaults with map
+          panelModelSel.value = modelSelect.value;
+          panelYearSel.value = yearSelect.value;
+
+          renderChart(iso3);
+          renderEvents(iso3);
+        }
+
+        function refreshPanelIfOpen() {
+          if (!selectedIso3) return;
+          renderChart(selectedIso3);
+          renderEvents(selectedIso3);
+        }
+
+        startYearSel.addEventListener("change", () => {
+          if (Number(startYearSel.value) > Number(endYearSel.value)) startYearSel.value = endYearSel.value;
+          refreshPanelIfOpen();
+        });
+        endYearSel.addEventListener("change", () => {
+          if (Number(endYearSel.value) < Number(startYearSel.value)) endYearSel.value = startYearSel.value;
+          refreshPanelIfOpen();
+        });
+        showEventsChk.addEventListener("change", refreshPanelIfOpen);
+        panelModelSel.addEventListener("change", refreshPanelIfOpen);
+        metricSelect.addEventListener("change", refreshPanelIfOpen);
+
+        // Optional: set map year when panel highlight changes
+        panelYearSel.addEventListener("change", () => {
+          yearSelect.value = panelYearSel.value;
+          updateMap();
+        });
+
+        closePanel.addEventListener("click", resetSelection);
+
+        /* ------------------- TOOLTIP + CLICK ------------------- */
+        function onEachCountry(feature, layer) {
+          const iso3 = getISO3(feature);
+
+          layer.on("mouseover", () => highlight(layer));
+          layer.on("mouseout", () => {
+            if (selectedFeatureLayer && layer === selectedFeatureLayer) layer.setStyle({ weight: 2.2 });
+            else unhighlight(layer);
+          });
+
+          layer.on("click", () => {
+            if (!iso3 || iso3 === "-99") return;
+            if (countriesLayer) countriesLayer.resetStyle();
+            selectedFeatureLayer = layer;
+            layer.setStyle({ weight: 2.2 });
+            openPanel(iso3);
+          });
+
+          layer.bindTooltip(() => {
+            if (!iso3 || iso3 === "-99") return `<b>${getCountryName(feature) || "Country"}</b><br/>No ISO3`;
+            const v = getAnnualDamage(iso3, currentMapYear(), currentMapModel());
+            const nm = nameByIso3.get(iso3) || getCountryName(feature) || iso3;
+            return `<b>${nm}</b><br/>${currentMapYear()} · ${currentMapModel()}: $${formatUSD(v)}`;
+          }, { sticky: true });
+        }
+
+        /* ------------------- MAP UPDATE ------------------- */
+        function updateMap() {
+          if (countriesLayer) countriesLayer.remove();
+          countriesLayer = L.geoJSON(countriesGeo, { style: styleCountry, onEachFeature: onEachCountry }).addTo(map);
+
+          renderLegend(currentMapModel(), currentMapYear());
+
+          // Keep panel highlight aligned
+          panelYearSel.value = yearSelect.value;
+
+          // If selected, refresh values/markers
+          refreshPanelIfOpen();
+        }
+
+        modelSelect.addEventListener("change", () => {
+          panelModelSel.value = modelSelect.value;
+          updateMap();
+        });
+
+        yearSelect.addEventListener("change", updateMap);
+
+        // Initial legend + render
+        renderLegend(defaultModel, defaultYear);
         updateMap();
-      });
-      yearSelect.addEventListener("change", updateMap);
 
-      /* ------------------- INITIAL RENDER ------------------- */
-      renderLegend(defaultModel, defaultYear);
-      updateMap();
+        try { map.fitBounds(countriesLayer.getBounds(), { padding: [10, 10] }); } catch (e) {}
 
-      // Fit bounds after render
-      try {
-        map.fitBounds(countriesLayer.getBounds(), { padding: [10, 10] });
-      } catch (e) {
-        // ignore
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "ERROR: " + (err?.message || String(err));
       }
     });
   </script>

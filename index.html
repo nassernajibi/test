@@ -11,45 +11,48 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
-    /* Font Strategy: Aptos followed by Segoe UI */
     html, body { 
       height: 100%; margin: 0; 
       font-family: 'Aptos', 'Segoe UI', sans-serif; 
       overflow: hidden; font-size: 18px; 
-      font-weight: 400; /* No bold by default */
+      font-weight: 400;
     }
     #map { height: 100%; width: 100%; z-index: 1; background: #cad2d3; }
 
-    /* Left Controls Group */
-    .left-controls { position: absolute; top: 15px; left: 15px; z-index: 1100; display: flex; flex-direction: column; gap: 15px; width: 420px; }
-    .topbar, .legend, .stats-card { background: #fff; padding: 25px; border-radius: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+    /* Left Controls */
+    .left-controls { position: absolute; top: 15px; left: 15px; z-index: 1100; display: flex; flex-direction: column; gap: 15px; width: 400px; }
+    .topbar, .legend, .stats-card { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
     
-    /* Control Menu specific bolding */
     .topbar label { font-size: 16px; font-weight: 700; color: #222; text-transform: uppercase; display: block; margin-bottom: 8px; }
-    .topbar select, .topbar button, .topbar div[style*="font-weight"] { font-weight: 700 !important; }
+    .topbar select, .topbar button, .topbar .brand { font-weight: 700 !important; }
 
-    select, button { width: 100%; padding: 14px; border-radius: 10px; border: 2px solid #bbb; font-size: 18px; cursor: pointer; transition: 0.2s; font-family: inherit; }
+    select, button { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #bbb; font-size: 17px; cursor: pointer; font-family: inherit; }
     button:hover { background: #f0f0f0; border-color: #900; }
 
-    /* Sidebar and Stats (Regular Weight) */
-    .sidebar { position: absolute; top: 15px; right: 15px; z-index: 1100; background: #fff; width: 450px; max-height: calc(100% - 320px); border-radius: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
+    /* Right Sidebar */
+    .sidebar { position: absolute; top: 15px; right: 15px; z-index: 1100; background: #fff; width: 400px; max-height: calc(100% - 320px); border-radius: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
     .sidebar.hidden { display: none; }
-    .sidebar-body { padding: 25px; overflow-y: auto; flex-grow: 1; }
-    .sidebar label { font-size: 16px; color: #555; text-transform: uppercase; display: block; margin-bottom: 8px; font-weight: 400; }
+    .sidebar-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
 
-    .bottom-panel { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1100; background: #fff; width: 97%; height: 280px; border-radius: 15px; box-shadow: 0 -5px 25px rgba(0,0,0,0.4); padding: 20px 30px; box-sizing: border-box; }
+    /* Centered Bottom Panel */
+    .bottom-panel { 
+      position: absolute; bottom: 20px; 
+      left: 430px; right: 430px; /* Positions it between the 400px side panels + 30px gap */
+      z-index: 1100; background: #fff; height: 280px; border-radius: 15px; 
+      box-shadow: 0 -5px 25px rgba(0,0,0,0.4); padding: 20px 30px; box-sizing: border-box; 
+    }
     .bottom-panel.hidden { display: none; }
 
-    .legend-row { display: flex; align-items: center; gap: 15px; margin: 10px 0; font-size: 16px; }
-    .swatch { width: 35px; height: 22px; border-radius: 5px; border: 1px solid #444; }
+    .legend-row { display: flex; align-items: center; gap: 12px; margin: 8px 0; font-size: 15px; }
+    .swatch { width: 30px; height: 20px; border-radius: 4px; border: 1px solid #444; }
     
-    .stats-card { border-left: 8px solid #800000; font-weight: 400; }
-    .stat-val { font-size: 24px; color: #800000; }
+    .stats-card { border-left: 8px solid #800000; }
+    .stat-val { font-size: 22px; color: #800000; }
 
-    .event-item { padding: 15px 0; border-bottom: 1px solid #ddd; font-size: 15px; line-height: 1.5; }
-    .pill { background: #ffebeb; color: #800000; padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid #800000; }
+    .event-item { padding: 12px 0; border-bottom: 1px solid #ddd; font-size: 14px; line-height: 1.6; }
+    .pill { background: #ffebeb; color: #800000; padding: 3px 8px; border-radius: 5px; font-size: 11px; border: 1px solid #800000; }
     
-    #chartHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    #chartHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -58,12 +61,12 @@
 
 <div class="left-controls">
   <div class="topbar">
-    <div style="font-weight:900; font-size:24px; color:#800000; margin-bottom:20px; border-bottom: 3px solid #800000;">FLOOD DAMAGE PORTAL</div>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+    <div class="brand" style="font-size:22px; color:#800000; margin-bottom:15px; border-bottom: 3px solid #800000;">FLOOD DAMAGE PORTAL</div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
       <div>
         <label>Model Logic</label>
         <select id="modelSelect">
-          <option value="ensemble">Ensemble (Spread)</option>
+          <option value="ensemble">Ensemble (Median/Whiskers)</option>
           <option value="lm_USD">MLR (Linear)</option>
           <option value="rf_USD">Random Forest</option>
           <option value="xgb_USD">XGBoost</option>
@@ -77,7 +80,7 @@
         <select id="yearSelect"></select>
       </div>
     </div>
-    <div style="margin-top:20px; display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+    <div style="margin-top:15px; display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
       <button id="dlCountry" style="background:#f4f9ff;">Download CSV</button>
       <button id="clearBtn" style="background:#fff1f1;">Reset Map</button>
     </div>
@@ -96,38 +99,31 @@
 
 <div id="sidebar" class="sidebar hidden">
   <div class="sidebar-body">
-    <div id="countryName" style="font-size:30px; color:#222; margin-bottom:15px;">Country</div>
-    <label>Filter Range</label>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:25px;">
+    <div id="countryName" style="font-size:28px; color:#222; margin-bottom:10px;">Country</div>
+    <label>Year Range</label>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:20px;">
       <select id="startYear"></select>
       <select id="endYear"></select>
     </div>
-    <div style="font-size:18px; margin-bottom:15px; color:#444; border-bottom: 2px solid #eee;">INDIVIDUAL FLOOD EVENTS</div>
+    <div style="font-size:16px; margin-bottom:12px; color:#444; border-bottom: 2px solid #eee;">EVENT ATTRIBUTES</div>
     <div id="eventsList"></div>
   </div>
 </div>
 
 <div id="bottomPanel" class="bottom-panel hidden">
   <div id="chartHeader">
-    <div style="font-size:20px;">Time Series Trend (Logarithmic Scale)</div>
-    <button id="savePng" style="width:auto; padding: 8px 20px; background:#e8f5e9; border-color:#2e7d32; font-weight:700 !important;">Export PNG</button>
+    <div style="font-size:18px;">Annual Damage Trend (Log Scale Bars)</div>
+    <button id="savePng" style="width:auto; padding: 6px 15px; background:#e8f5e9; border-color:#2e7d32; font-weight:700 !important;">Export PNG</button>
   </div>
   <div style="height:180px; width:100%;"><canvas id="tsChart"></canvas></div>
 </div>
 
 <script>
   const BINS = [0, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11];
-  // Darkish Yellow to Red to Dark Brown
   const COLORS = ["#d4c300", "#e6a300", "#f77f00", "#d62828", "#9d0208", "#6a040f", "#370617", "#03071e"];
-  // Models in the exact order requested
   const BASE_MODELS = ["lm_USD", "rf_USD", "xgb_USD", "svr_USD", "brnn_USD", "knn_USD"];
   
-  const NAME_TO_ISO = { 
-    "usa": "USA", "uk": "GBR", "united kingdom": "GBR", "russia": "RUS", "vietnam": "VNM", 
-    "south korea": "KOR", "iran": "IRN", "democratic republic of the congo": "COD", 
-    "republic of congo": "COG", "ivory coast": "CIV", "laos": "LAO", "bolivia": "BOL",
-    "venezuela": "VEN", "syria": "SYR", "tanzania": "TZA", "czech republic": "CZE", "trinidad": "TTO"
-  };
+  const NAME_TO_ISO = { "usa": "USA", "uk": "GBR", "russia": "RUS", "vietnam": "VNM", "south korea": "KOR" };
 
   let fullData = [], countriesGeo, eventsByIso = new Map(), years = [], chart, selectedIso = null;
   let eventMarkers = L.layerGroup();
@@ -146,50 +142,37 @@
   }
 
   async function init() {
-    try {
-      const [geoRes, csvRes] = await Promise.all([fetch('./data/countries.geojson'), fetch('./data/DFO21_damages_wt_EMDAT21.csv')]);
-      countriesGeo = await geoRes.json();
-      const csvText = await csvRes.text();
-      fullData = Papa.parse(csvText, { header: true, skipEmptyLines: true }).data;
+    const [geoRes, csvRes] = await Promise.all([fetch('./data/countries.geojson'), fetch('./data/DFO21_damages_wt_EMDAT21.csv')]);
+    countriesGeo = await geoRes.json();
+    fullData = Papa.parse(await csvRes.text(), { header: true, skipEmptyLines: true }).data;
 
-      fullData.forEach(row => {
-        const y = parseInt(row.Began?.split('/')[0]);
-        if (!y) return;
-        years.push(y);
+    fullData.forEach(row => {
+      const y = parseInt(row.Began?.split('/')[0]);
+      if (!y) return;
+      years.push(y);
+      let iso = NAME_TO_ISO[row.country?.toLowerCase().trim()];
+      if (!iso) {
+        const f = countriesGeo.features.find(feat => feat.properties.ADMIN?.toLowerCase() === row.country?.toLowerCase() || feat.properties.NAME?.toLowerCase() === row.country?.toLowerCase());
+        iso = f ? (f.properties.ISO_A3 || f.properties.ADM0_A3) : null;
+      }
+      if (iso && iso !== "-99") {
+        if (!eventsByIso.has(iso)) eventsByIso.set(iso, { name: row.country, events: [], annual: {} });
+        const entry = eventsByIso.get(iso);
+        entry.events.push(row);
+        if (!entry.annual[y]) entry.annual[y] = [];
+        entry.annual[y].push(row);
+      }
+    });
 
-        let iso = NAME_TO_ISO[row.country?.toLowerCase().trim()];
-        if (!iso) {
-          const f = countriesGeo.features.find(feat => 
-            feat.properties.ADMIN?.toLowerCase() === row.country?.toLowerCase() || 
-            feat.properties.NAME?.toLowerCase() === row.country?.toLowerCase()
-          );
-          iso = f ? (f.properties.ISO_A3 || f.properties.ADM0_A3) : null;
-        }
-
-        if (iso && iso !== "-99") {
-          if (!eventsByIso.has(iso)) eventsByIso.set(iso, { name: row.country, events: [], annual: {} });
-          const entry = eventsByIso.get(iso);
-          entry.events.push(row);
-          if (!entry.annual[y]) entry.annual[y] = [];
-          entry.annual[y].push(row);
-        }
-      });
-
-      years = [...new Set(years)].sort();
-      years.forEach(y => { el('yearSelect').add(new Option(y, y)); el('startYear').add(new Option(y, y)); el('endYear').add(new Option(y, y)); });
-      el('yearSelect').value = years[years.length - 1];
-      el('endYear').value = years[years.length - 1];
-
-      renderLegend();
-      updateMap();
-    } catch (e) { console.error(e); }
+    years = [...new Set(years)].sort();
+    years.forEach(y => { el('yearSelect').add(new Option(y, y)); el('startYear').add(new Option(y, y)); el('endYear').add(new Option(y, y)); });
+    el('yearSelect').value = years[years.length - 1]; el('endYear').value = years[years.length - 1];
+    renderLegend(); updateMap();
   }
 
   function updateMap() {
     if (window.gLayer) map.removeLayer(window.gLayer);
-    const yr = parseInt(el('yearSelect').value);
-    const mod = el('modelSelect').value;
-
+    const yr = parseInt(el('yearSelect').value), mod = el('modelSelect').value;
     window.gLayer = L.geoJson(countriesGeo, {
       style: f => {
         const iso = f.properties.ISO_A3 || f.properties.ADM0_A3 || NAME_TO_ISO[f.properties.ADMIN?.toLowerCase()];
@@ -204,101 +187,100 @@
           el('countryName').textContent = f.properties.ADMIN || f.properties.NAME;
           refreshUI();
         });
-        l.bindTooltip(f.properties.ADMIN || f.properties.NAME);
       }
     }).addTo(map);
   }
 
-  function getColor(v) {
-    if (!v || v <= 0) return "#d4d4d4";
-    for (let i = BINS.length-1; i>=0; i--) if (v >= BINS[i]) return COLORS[i];
-    return COLORS[0];
-  }
+  function getColor(v) { if (!v || v <= 0) return "#d4d4d4"; for (let i = BINS.length-1; i>=0; i--) if (v >= BINS[i]) return COLORS[i]; return COLORS[0]; }
 
-  function renderLegend() {
-    el('legendItems').innerHTML = BINS.map((b,i)=> `
-      <div class="legend-row">
-        <div class="swatch" style="background:${COLORS[i]}"></div>
-        <span>${BINS[i+1]?formatUSD(b)+' - '+formatUSD(BINS[i+1]):'> '+formatUSD(b)}</span>
-      </div>`).join('')+`<div class="legend-row"><div class="swatch" style="background:#d4d4d4"></div><span>No Recorded Damage</span></div>`;
-  }
+  function renderLegend() { el('legendItems').innerHTML = BINS.map((b,i)=> `<div class="legend-row"><div class="swatch" style="background:${COLORS[i]}"></div><span>${BINS[i+1]?formatUSD(b)+' - '+formatUSD(BINS[i+1]):'> '+formatUSD(b)}</span></div>`).join('')+`<div class="legend-row"><div class="swatch" style="background:#d4d4d4"></div><span>No Recorded Damage</span></div>`; }
 
   function refreshUI() {
     if (!selectedIso) return;
-    const entry = eventsByIso.get(selectedIso);
-    const mod = el('modelSelect').value;
+    const entry = eventsByIso.get(selectedIso), mod = el('modelSelect').value;
     
     eventMarkers.clearLayers();
     entry.events.forEach(e => {
       if (e.lat && e.lon) {
+        const stats = getStats(e);
+        const dmg = mod === 'ensemble' ? stats.med : (parseFloat(e[mod]) || 0);
         L.circleMarker([e.lat, e.lon], { radius: 8, color: '#333', weight: 1, fillColor: '#ffff00', fillOpacity: 1 })
-        .addTo(eventMarkers).bindPopup(`Date: ${e.Began}<br>Damage (Med): ${formatUSD(getStats(e).med)}`);
+        .addTo(eventMarkers).bindTooltip(`
+          Began: ${e.Began}<br>Ended: ${e.Ended}<br>Duration: ${e.duration} days<br>
+          Deaths: ${e.dead || 0}<br>Area: ${e.area} km²<br>Damage: ${formatUSD(dmg)}
+        `);
       }
     });
 
-    const totalArea = entry.events.reduce((s,e)=>s+(parseFloat(e.area)||0),0);
-    const avgDur = entry.events.reduce((s,e)=>s+(parseFloat(e.duration)||0),0) / entry.events.length;
-    
-    el('countryStats').innerHTML = `
-      <div style="margin-bottom:12px;">Events: <span class="stat-val">${entry.events.length}</span></div>
-      <div style="margin-bottom:12px;">Avg Duration: <span class="stat-val">${avgDur.toFixed(1)} Days</span></div>
-      <div>Affected Area: <span class="stat-val">${formatUSD(totalArea).replace('$','')} km²</span></div>
-    `;
-
     const dataset = years.map(y => { const rs = entry?.annual[y] || []; return rs.length === 0 ? {med:0,min:0,max:0} : getStats(rs); });
     if (chart) chart.destroy();
-    
-    const chartData = {
-      labels: years,
-      datasets: mod === 'ensemble' ? [
-        { label: 'Median', data: dataset.map(d=>d.med), borderColor: '#800000', borderWidth: 2, fill: false, pointRadius: 3 },
-        { label: 'Max', data: dataset.map(d=>d.max), fill: '+1', backgroundColor: 'rgba(128,0,0,0.1)', borderColor: 'transparent', pointRadius: 0 },
-        { label: 'Min', data: dataset.map(d=>d.min), fill: false, borderColor: 'transparent', pointRadius:0 }
-      ] : [{ label: mod, data: dataset.map(d=>d.med), borderColor: '#800000', borderWidth: 2, fill: true, backgroundColor: 'rgba(128,0,0,0.05)', pointRadius: 3 }]
+
+    // Chart with Whiskers Plugin
+    const whiskerPlugin = {
+      id: 'whiskers',
+      afterDatasetsDraw(chart) {
+        if (el('modelSelect').value !== 'ensemble') return;
+        const {ctx, scales: {x, y}} = chart;
+        ctx.strokeStyle = '#444'; ctx.lineWidth = 1.5;
+        dataset.forEach((d, i) => {
+          if (d.med === 0) return;
+          const xPos = x.getPixelForValue(years[i]);
+          const yMin = y.getPixelForValue(d.min || d.med);
+          const yMax = y.getPixelForValue(d.max || d.med);
+          ctx.beginPath(); ctx.moveTo(xPos, yMin); ctx.lineTo(xPos, yMax); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(xPos - 4, yMin); ctx.lineTo(xPos + 4, yMin); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(xPos - 4, yMax); ctx.lineTo(xPos + 4, yMax); ctx.stroke();
+        });
+      }
     };
 
     chart = new Chart(el('tsChart'), {
-      type: 'line',
-      data: chartData,
+      type: 'bar',
+      data: {
+        labels: years,
+        datasets: [{
+          data: dataset.map(d => d.med),
+          backgroundColor: '#800000',
+          borderColor: '#4a0000',
+          borderWidth: 1
+        }]
+      },
       options: {
         maintainAspectRatio: false,
-        scales: { 
-          y: { 
-            type: 'logarithmic', 
-            min: 1e5, 
-            ticks: { callback: v => formatUSD(v), font: { size: 14 } } 
-          },
-          x: { ticks: { font: { size: 14 } } }
-        },
+        scales: { y: { type: 'logarithmic', min: 1e5, ticks: { callback: v => formatUSD(v) } } },
         plugins: { legend: { display: false } }
-      }
+      },
+      plugins: [whiskerPlugin]
     });
 
     const s = parseInt(el('startYear').value), eY = parseInt(el('endYear').value);
     const filtered = entry.events.filter(e => { const y = parseInt(e.Began?.split('/')[0]); return y >= s && y <= eY; });
-    el('eventsList').innerHTML = filtered.map(ev => `
-      <div class="event-item">
-        <span class="pill">YEAR ${ev.Began.split('/')[0]}</span> <span>${ev.MainCause || 'Flood Event'}</span><br/>
-        <small style="color:#666">Loc: ${ev.lat}, ${ev.lon} | Damage: ${formatUSD(getStats(ev).med)}</small>
-      </div>`).join('');
+    el('eventsList').innerHTML = filtered.map(ev => {
+      const dmg = mod === 'ensemble' ? getStats(ev).med : (parseFloat(ev[mod]) || 0);
+      return `<div class="event-item">
+        <span class="pill">${ev.Began} - ${ev.Ended}</span><br>
+        Duration: ${ev.duration} days | Deaths: ${ev.dead || 0}<br>
+        Area: ${ev.area} km² | Damage: ${formatUSD(dmg)}<br>
+        <small style="color:#666">Coords: ${ev.lat}, ${ev.lon}</small>
+      </div>`;
+    }).join('');
+    
+    const totalArea = entry.events.reduce((s,e)=>s+(parseFloat(e.area)||0),0);
+    el('countryStats').innerHTML = `Events: <span class="stat-val">${entry.events.length}</span><br>Total Area: <span class="stat-val">${formatUSD(totalArea).replace('$','')} km²</span>`;
   }
 
   el('savePng').onclick = () => {
     const link = document.createElement('a');
     link.download = `FLOOD-CHART-${el('countryName').textContent}.png`;
-    link.href = el('tsChart').toDataURL('image/png');
-    link.click();
+    link.href = el('tsChart').toDataURL('image/png'); link.click();
   };
 
   el('dlCountry').onclick = () => {
-    if (!selectedIso) return alert("Select a country on the map first.");
-    const countryName = el('countryName').textContent.replace(/\s+/g, '-');
+    if (!selectedIso) return alert("Select a country.");
     const csv = Papa.unparse(eventsByIso.get(selectedIso).events);
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `FLOOD-XML-${countryName}.csv`;
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `FLOOD-XML-${el('countryName').textContent.replace(/\s+/g, '-')}.csv`;
     a.click();
   };
 
@@ -306,7 +288,6 @@
   el('yearSelect').onchange = updateMap;
   el('startYear').onchange = refreshUI; el('endYear').onchange = refreshUI;
   el('clearBtn').onclick = () => location.reload();
-
   init();
 </script>
 </body>

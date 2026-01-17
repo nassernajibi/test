@@ -469,10 +469,10 @@
         const deathVal = e.dead || e.deaths || 0;
         L.circleMarker([e.lat, e.lon], { 
           radius: 7, 
-          color: '#1976d2', 
+          color: '#424242', 
           weight: 2, 
-          fillColor: '#ffd54f', 
-          fillOpacity: 0.9 
+          fillColor: '#757575', 
+          fillOpacity: 0.7 
         })
         .addTo(eventMarkers).bindPopup(`
           <div style="font-family: inherit;">
@@ -516,15 +516,20 @@
     };
 
     chart = new Chart(el('tsChart'), {
-      type: 'bar',
+      type: 'line',
       data: {
         labels: years,
         datasets: [{
           data: dataset.map(d => d.med),
           backgroundColor: '#1976d2',
           borderColor: '#0d47a1',
-          borderWidth: 1,
-          borderRadius: 4
+          borderWidth: 2,
+          pointRadius: 5,
+          pointBackgroundColor: '#1976d2',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointHoverRadius: 7,
+          tension: 0
         }]
       },
       options: {

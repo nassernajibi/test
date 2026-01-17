@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Flood Damage Analytics Pro</title>
+  <title>FLOOD-XML Portal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -37,8 +37,8 @@
     /* Centered Bottom Panel */
     .bottom-panel { 
       position: absolute; bottom: 20px; 
-      left: 430px; right: 430px; /* Positions it between the 400px side panels + 30px gap */
-      z-index: 1100; background: #fff; height: 280px; border-radius: 15px; 
+      left: 430px; right: 430px;
+      z-index: 1100; background: #fff; height: 300px; border-radius: 15px; 
       box-shadow: 0 -5px 25px rgba(0,0,0,0.4); padding: 20px 30px; box-sizing: border-box; 
     }
     .bottom-panel.hidden { display: none; }
@@ -47,7 +47,7 @@
     .swatch { width: 30px; height: 20px; border-radius: 4px; border: 1px solid #444; }
     
     .stats-card { border-left: 8px solid #800000; }
-    .stat-val { font-size: 22px; color: #800000; }
+    .stat-val { font-size: 20px; color: #800000; }
 
     .event-item { padding: 12px 0; border-bottom: 1px solid #ddd; font-size: 14px; line-height: 1.6; }
     .pill { background: #ffebeb; color: #800000; padding: 3px 8px; border-radius: 5px; font-size: 11px; border: 1px solid #800000; }
@@ -61,12 +61,12 @@
 
 <div class="left-controls">
   <div class="topbar">
-    <div class="brand" style="font-size:22px; color:#800000; margin-bottom:15px; border-bottom: 3px solid #800000;">FLOOD DAMAGE PORTAL</div>
+    <div class="brand" style="font-size:22px; color:#800000; margin-bottom:15px; border-bottom: 3px solid #800000;">FLOOD-XML PORTAL</div>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
       <div>
         <label>Model Logic</label>
         <select id="modelSelect">
-          <option value="ensemble">Ensemble (Median/Whiskers)</option>
+          <option value="ensemble">Ensemble (Whiskers)</option>
           <option value="lm_USD">MLR (Linear)</option>
           <option value="rf_USD">Random Forest</option>
           <option value="xgb_USD">XGBoost</option>
@@ -92,8 +92,8 @@
   </div>
 
   <div id="statsBox" class="stats-card hidden">
-    <label style="font-weight: 400; text-transform: none;">Country Statistics</label>
-    <div id="countryStats"></div>
+    <label style="font-weight: 400; text-transform: none;">Country Summary</label>
+    <div id="countryStats" style="font-size: 15px; line-height: 1.4;"></div>
   </div>
 </div>
 
@@ -112,10 +112,10 @@
 
 <div id="bottomPanel" class="bottom-panel hidden">
   <div id="chartHeader">
-    <div style="font-size:18px;">Annual Damage Trend (Log Scale Bars)</div>
+    <div style="font-size:18px;">Annual Damages (USD)</div>
     <button id="savePng" style="width:auto; padding: 6px 15px; background:#e8f5e9; border-color:#2e7d32; font-weight:700 !important;">Export PNG</button>
   </div>
-  <div style="height:180px; width:100%;"><canvas id="tsChart"></canvas></div>
+  <div style="height:200px; width:100%;"><canvas id="tsChart"></canvas></div>
 </div>
 
 <script>
@@ -202,46 +202,52 @@
     eventMarkers.clearLayers();
     entry.events.forEach(e => {
       if (e.lat && e.lon) {
-        const stats = getStats(e);
-        const dmg = mod === 'ensemble' ? stats.med : (parseFloat(e[mod]) || 0);
+        const dmg = mod === 'ensemble' ? getStats(e).med : (parseFloat(e[mod]) || 0);
         L.circleMarker([e.lat, e.lon], { radius: 8, color: '#333', weight: 1, fillColor: '#ffff00', fillOpacity: 1 })
         .addTo(eventMarkers).bindTooltip(`
-          Began: ${e.Began}<br>Ended: ${e.Ended}<br>Duration: ${e.duration} days<br>
-          Deaths: ${e.dead || 0}<br>Area: ${e.area} km²<br>Damage: ${formatUSD(dmg)}
+          <b>${e.MainCause}</b><br>
+          Began: ${e.Began}<br>Ended: ${e.Ended}<br>
+          Duration: ${e.duration} days<br>Deaths: ${e.dead || 0}<br>
+          Area: ${e.area} km²<br>Damage: ${formatUSD(dmg)}
         `);
       }
     });
 
-    const dataset = years.map(y => { const rs = entry?.annual[y] || []; return rs.length === 0 ? {med:0,min:0,max:0} : getStats(rs); });
+    const dataset = years.map(y => { 
+        const rs = entry?.annual[y] || []; 
+        return rs.length === 0 ? {med:0,min:0,max:0, count:0} : {...getStats(rs), count: rs.length}; 
+    });
+
     if (chart) chart.destroy();
 
-    // Chart with Whiskers Plugin
     const whiskerPlugin = {
       id: 'whiskers',
       afterDatasetsDraw(chart) {
         if (el('modelSelect').value !== 'ensemble') return;
         const {ctx, scales: {x, y}} = chart;
-        ctx.strokeStyle = '#444'; ctx.lineWidth = 1.5;
+        ctx.save();
+        ctx.strokeStyle = '#ff0000'; ctx.lineWidth = 2; // Red whiskers for visibility
         dataset.forEach((d, i) => {
           if (d.med === 0) return;
           const xPos = x.getPixelForValue(years[i]);
           const yMin = y.getPixelForValue(d.min || d.med);
           const yMax = y.getPixelForValue(d.max || d.med);
           ctx.beginPath(); ctx.moveTo(xPos, yMin); ctx.lineTo(xPos, yMax); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(xPos - 4, yMin); ctx.lineTo(xPos + 4, yMin); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(xPos - 4, yMax); ctx.lineTo(xPos + 4, yMax); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(xPos - 6, yMin); ctx.lineTo(xPos + 6, yMin); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(xPos - 6, yMax); ctx.lineTo(xPos + 6, yMax); ctx.stroke();
         });
+        ctx.restore();
       }
     };
 
     chart = new Chart(el('tsChart'), {
       type: 'bar',
       data: {
-        labels: years,
+        labels: years.map((y, i) => `${y} (${dataset[i].count})`),
         datasets: [{
           data: dataset.map(d => d.med),
-          backgroundColor: '#800000',
-          borderColor: '#4a0000',
+          backgroundColor: '#000000', // Black bars
+          borderColor: '#000',
           borderWidth: 1
         }]
       },
@@ -259,14 +265,19 @@
       const dmg = mod === 'ensemble' ? getStats(ev).med : (parseFloat(ev[mod]) || 0);
       return `<div class="event-item">
         <span class="pill">${ev.Began} - ${ev.Ended}</span><br>
+        <b>${ev.MainCause}</b><br>
         Duration: ${ev.duration} days | Deaths: ${ev.dead || 0}<br>
-        Area: ${ev.area} km² | Damage: ${formatUSD(dmg)}<br>
-        <small style="color:#666">Coords: ${ev.lat}, ${ev.lon}</small>
+        Area: ${ev.area} km² | Damage: ${formatUSD(dmg)}
       </div>`;
     }).join('');
     
     const totalArea = entry.events.reduce((s,e)=>s+(parseFloat(e.area)||0),0);
-    el('countryStats').innerHTML = `Events: <span class="stat-val">${entry.events.length}</span><br>Total Area: <span class="stat-val">${formatUSD(totalArea).replace('$','')} km²</span>`;
+    const totalDeaths = entry.events.reduce((s,e)=>s+(parseFloat(e.dead)||0),0);
+    el('countryStats').innerHTML = `
+        Events: <span class="stat-val">${entry.events.length}</span><br>
+        Total Deaths: <span class="stat-val">${totalDeaths}</span><br>
+        Total Area: <span class="stat-val">${formatUSD(totalArea).replace('$','')} km²</span>
+    `;
   }
 
   el('savePng').onclick = () => {

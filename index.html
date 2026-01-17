@@ -2,199 +2,838 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>World GDP Choropleth (Time Enabled)</title>
+  <title>Flood Damages Explorer (Country + Time Series + Models)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Leaflet -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    crossorigin=""
-  />
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    crossorigin=""
-    defer
-  ></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
 
-  <!-- PapaParse for CSV -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"
-    defer
-  ></script>
+  <!-- PapaParse (CSV) -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+
+  <!-- Chart.js (time series) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
 
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    }
-    #map {
-      height: 100%;
-    }
-    .control {
+    html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    #map { height: 100%; width: 100%; }
+
+    .topbar {
       position: absolute;
       top: 12px;
       left: 12px;
-      z-index: 1000;
-      background: white;
-      padding: 12px;
-      border-radius: 8px;
-      box-shadow: 0 1px 8px rgba(0,0,0,0.15);
-      min-width: 240px;
+      z-index: 1100;
+      background: #fff;
+      padding: 12px 12px 10px 12px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+      min-width: 330px;
+      max-width: 420px;
     }
-    .control label {
-      font-size: 13px;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .control select {
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .row.single { grid-template-columns: 1fr; }
+    label { font-size: 12px; color: #222; display: block; margin-bottom: 6px; }
+    select, button {
       width: 100%;
-      padding: 6px;
+      padding: 7px 8px;
+      border-radius: 8px;
+      border: 1px solid #d0d0d0;
+      background: #fff;
+      font-size: 13px;
     }
-    .status {
-      margin-top: 6px;
+    button { cursor: pointer; }
+    button.secondary { background: #f7f7f7; }
+    .status { margin-top: 8px; font-size: 12px; color: #444; }
+
+    .panel {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 1100;
+      background: #fff;
+      width: 430px;
+      max-width: calc(100% - 24px);
+      height: calc(100% - 24px);
+      border-radius: 10px;
+      box-shadow: 0 2px 14px rgba(0,0,0,0.18);
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+    }
+    .panel.hidden { display: none; }
+
+    .panel-header {
+      padding: 12px 12px 10px 12px;
+      border-bottom: 1px solid #eee;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 10px;
+    }
+    .panel-title {
+      font-weight: 650;
+      font-size: 14px;
+      line-height: 1.2;
+    }
+    .panel-subtitle {
       font-size: 12px;
-      color: #444;
+      color: #555;
+      margin-top: 3px;
+    }
+    .close-btn {
+      width: auto;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid #d0d0d0;
+      background: #fff;
+    }
+
+    .panel-controls {
+      padding: 10px 12px 10px 12px;
+      border-bottom: 1px solid #eee;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: end;
+    }
+    .panel-controls .row3 {
+      grid-column: 1 / span 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      align-items: end;
+      margin-top: 2px;
+    }
+    .checkbox-wrap {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid #d0d0d0;
+      border-radius: 8px;
+      padding: 7px 8px;
+      height: 34px;
+    }
+    .checkbox-wrap input { margin: 0; }
+
+    .panel-body {
+      padding: 12px;
+      overflow: auto;
+    }
+
+    .card {
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+    .card h3 {
+      font-size: 13px;
+      margin: 0 0 8px 0;
+    }
+    .small {
+      font-size: 12px;
+      color: #555;
+    }
+
+    .events {
+      max-height: 300px;
+      overflow: auto;
+      border: 1px solid #eee;
+      border-radius: 10px;
+    }
+    .event-item {
+      padding: 10px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 12px;
+    }
+    .event-item:last-child { border-bottom: none; }
+    .event-top { display: flex; justify-content: space-between; gap: 10px; }
+    .event-cause { color: #555; margin-top: 4px; }
+    .event-meta { color: #666; margin-top: 4px; }
+
+    .legend {
+      background: #fff;
+      padding: 10px 12px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+    .legend-title { font-weight: 650; margin-bottom: 8px; }
+    .legend-row { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
+    .swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,0.15); }
+    .muted { color: #666; }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border: 1px solid #e6e6e6;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #333;
+      background: #fafafa;
     }
   </style>
 </head>
 
 <body>
-  <div class="control">
-    <label for="yearSelect"><b>GDP (current US$)</b></label>
-    <select id="yearSelect" disabled></select>
+  <div id="map"></div>
+
+  <!-- Top controls -->
+  <div class="topbar">
+    <div style="font-weight:650; font-size:14px;">Flood Damages on Map</div>
     <div class="status" id="status">Loading…</div>
+
+    <div class="row">
+      <div>
+        <label for="modelSelect">Damage model (USD)</label>
+        <select id="modelSelect" disabled></select>
+      </div>
+      <div>
+        <label for="yearSelect">Map year (annual total)</label>
+        <select id="yearSelect" disabled></select>
+      </div>
+    </div>
+
+    <div class="row single">
+      <button id="clearBtn" class="secondary" disabled>Clear country selection</button>
+    </div>
+
+    <div class="status muted">
+      Click a country to view a time series and event-level details (1985+).
+    </div>
   </div>
 
-  <div id="map"></div>
+  <!-- Right panel -->
+  <div id="panel" class="panel hidden">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title" id="panelTitle">Country</div>
+        <div class="panel-subtitle" id="panelSubtitle">—</div>
+      </div>
+      <button class="close-btn" id="closePanel">Close</button>
+    </div>
+
+    <div class="panel-controls">
+      <div>
+        <label for="startYear">Start year</label>
+        <select id="startYear"></select>
+      </div>
+      <div>
+        <label for="endYear">End year</label>
+        <select id="endYear"></select>
+      </div>
+
+      <div class="row3">
+        <div class="checkbox-wrap">
+          <input type="checkbox" id="showEvents" checked />
+          <label for="showEvents" style="margin:0;">Show events</label>
+        </div>
+        <div>
+          <label for="panelModel">Model</label>
+          <select id="panelModel"></select>
+        </div>
+        <div>
+          <label for="panelYear">Highlight year</label>
+          <select id="panelYear"></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-body">
+      <div class="card">
+        <h3>Annual damages time series</h3>
+        <canvas id="tsChart" height="140"></canvas>
+        <div class="small" id="tsNote"></div>
+      </div>
+
+      <div class="card">
+        <h3>Event list (filtered by selected years)</h3>
+        <div class="small" id="eventSummary"></div>
+        <div class="events" id="eventsList"></div>
+      </div>
+    </div>
+  </div>
 
   <script>
     window.addEventListener("DOMContentLoaded", async () => {
+      /* ------------------- CONFIG ------------------- */
+      const PATH_COUNTRIES = "./data/countries.geojson";
+      const PATH_EVENTS_CSV = "./data/DFO21_damages_wt_EMDAT21.csv";
 
+      // Your CSV model columns:
+      const MODELS = [
+        { key: "lm_USD",   label: "MLR (lm_USD)" },
+        { key: "rf_USD",   label: "Random Forest (rf_USD)" },
+        { key: "xgb_USD",  label: "XGBoost (xgb_USD)" },
+        { key: "svr_USD",  label: "SVR (svr_USD)" },
+        { key: "brnn_USD", label: "BRNN (brnn_USD)" },
+        { key: "knn_USD",  label: "KNN (knn_USD)" }
+      ];
+
+      const MIN_YEAR = 1985;
+
+      /* ------------------- DOM ------------------- */
       const statusEl = document.getElementById("status");
+      const modelSelect = document.getElementById("modelSelect");
       const yearSelect = document.getElementById("yearSelect");
+      const clearBtn = document.getElementById("clearBtn");
 
-      /* ------------------ MAP ------------------ */
+      const panel = document.getElementById("panel");
+      const closePanel = document.getElementById("closePanel");
+      const panelTitle = document.getElementById("panelTitle");
+      const panelSubtitle = document.getElementById("panelSubtitle");
+
+      const startYearSel = document.getElementById("startYear");
+      const endYearSel = document.getElementById("endYear");
+      const showEventsChk = document.getElementById("showEvents");
+      const panelModelSel = document.getElementById("panelModel");
+      const panelYearSel = document.getElementById("panelYear");
+
+      const tsNote = document.getElementById("tsNote");
+      const eventSummary = document.getElementById("eventSummary");
+      const eventsList = document.getElementById("eventsList");
+
+      /* ------------------- HELPERS ------------------- */
+      function normalizeName(s) {
+        return String(s ?? "")
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, " ")
+          .replace(/[’'`"]/g, "")
+          .replace(/[\(\)\[\]\.,]/g, "");
+      }
+
+      function parseYearFromBegan(began) {
+        // Began is "YYYY/MM/DD" in your CSV.
+        const m = String(began ?? "").match(/^(\d{4})\//);
+        if (!m) return null;
+        const y = Number(m[1]);
+        return Number.isFinite(y) ? y : null;
+      }
+
+      function safeNumber(x) {
+        const v = Number(String(x ?? "").replace(/,/g, ""));
+        return Number.isFinite(v) ? v : null;
+      }
+
+      function formatUSD(x) {
+        if (x == null) return "NA";
+        return new Intl.NumberFormat("en-US", {
+          notation: "compact",
+          maximumFractionDigits: 2
+        }).format(x);
+      }
+
+      function fmtInt(x) {
+        if (x == null) return "NA";
+        const v = Math.round(Number(x));
+        if (!Number.isFinite(v)) return "NA";
+        return new Intl.NumberFormat("en-US").format(v);
+      }
+
+      /* -------- Legend thresholds (log-bucketed) --------
+         You can adjust these to your preferred bins.
+         These are annual totals in USD.
+      */
+      const BINS = [0, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11, 1e12, 1e13];
+      function getColor(v) {
+        if (v == null) return "#e0e0e0";
+        if (v > 1e13) return "#08306b";
+        if (v > 1e12) return "#08519c";
+        if (v > 1e11) return "#2171b5";
+        if (v > 1e10) return "#4292c6";
+        if (v > 1e9)  return "#6baed6";
+        if (v > 1e8)  return "#9ecae1";
+        if (v > 1e7)  return "#c6dbef";
+        if (v > 1e6)  return "#deebf7";
+        return "#f7fbff";
+      }
+      function binLabel(i) {
+        const a = BINS[i], b = BINS[i+1];
+        if (i === 0) return `< $${formatUSD(BINS[1])}`;
+        if (i === BINS.length - 2) return `> $${formatUSD(BINS[BINS.length - 1])}`;
+        return `$${formatUSD(a)} – $${formatUSD(b)}`;
+      }
+
+      /* ------------------- MAP ------------------- */
       const map = L.map("map").setView([20, 0], 2);
-
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap contributors"
       }).addTo(map);
 
-      /* ------------------ LOAD GEOJSON ------------------ */
+      let legendControl = null;
+      function renderLegend(modelKey, year) {
+        if (legendControl) legendControl.remove();
+
+        legendControl = L.control({ position: "bottomleft" });
+        legendControl.onAdd = () => {
+          const div = L.DomUtil.create("div", "legend");
+          const modelLabel = MODELS.find(m => m.key === modelKey)?.label ?? modelKey;
+          div.innerHTML = `
+            <div class="legend-title">Annual flood damages</div>
+            <div class="muted" style="margin-bottom:8px;">
+              <span class="pill">${modelLabel}</span>
+              <span class="pill">Year ${year}</span>
+            </div>
+            <div class="muted" style="margin-bottom:6px;">USD (log buckets)</div>
+          `;
+          for (let i = 0; i < BINS.length - 1; i++) {
+            const mid = (BINS[i] + BINS[i+1]) / 2;
+            const color = getColor(mid);
+            const row = document.createElement("div");
+            row.className = "legend-row";
+            row.innerHTML = `<span class="swatch" style="background:${color}"></span><span>${binLabel(i)}</span>`;
+            div.appendChild(row);
+          }
+          const naRow = document.createElement("div");
+          naRow.className = "legend-row";
+          naRow.innerHTML = `<span class="swatch" style="background:#e0e0e0"></span><span>NA / no events</span>`;
+          div.appendChild(naRow);
+
+          return div;
+        };
+        legendControl.addTo(map);
+      }
+
+      /* ------------------- DATA STRUCTURES ------------------- */
+      // Countries (GeoJSON polygons)
       statusEl.textContent = "Loading country boundaries…";
-      const geoRes = await fetch("./data/countries.geojson");
-      if (!geoRes.ok) throw new Error("countries.geojson not found");
-      const countries = await geoRes.json();
+      const geoRes = await fetch(PATH_COUNTRIES);
+      if (!geoRes.ok) throw new Error("Failed to load data/countries.geojson");
+      const countriesGeo = await geoRes.json();
 
-      /* ------------------ LOAD CSV ------------------ */
-      statusEl.textContent = "Loading GDP data…";
-      const csvText = await (await fetch("./data/world_gdp.csv")).text();
-
-      const parsed = Papa.parse(csvText, {
-        header: true,
-        skipEmptyLines: true
-      });
-
-      /* ------------------ PROCESS CSV ------------------ */
+      // Events CSV (DFO)
+      statusEl.textContent = "Loading flood damage events (CSV)…";
+      const csvText = await (await fetch(PATH_EVENTS_CSV)).text();
+      const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
       const rows = parsed.data;
 
-      // Identify year columns dynamically (1960, 1961, …)
-      const yearCols = Object.keys(rows[0]).filter(k => /^\d{4}$/.test(k)).sort();
+      // Build:
+      //   byCountryNorm: {
+      //     displayName,
+      //     events: [{year, began, ended, cause, lat, lon, duration, deaths, area, models:{...}}],
+      //     yearly: { [year]: { [modelKey]: sumUSD, eventsCount } }
+      //   }
+      const byCountryNorm = new Map();
+      const yearSet = new Set();
 
-      // Build lookup: gdp[year][ISO3] = value
-      const gdp = {};
-      yearCols.forEach(y => gdp[y] = {});
+      for (const r of rows) {
+        const cName = String(r.country ?? "").trim();
+        if (!cName) continue;
 
-      rows.forEach(row => {
-        const iso3 = row["Country Code"];
-        if (!iso3) return;
+        const y = parseYearFromBegan(r.Began);
+        if (!y || y < MIN_YEAR) continue;
 
-        yearCols.forEach(y => {
-          const v = Number(String(row[y]).replace(/,/g, ""));
-          if (Number.isFinite(v)) {
-            gdp[y][iso3] = v;
-          }
+        yearSet.add(y);
+
+        const key = normalizeName(cName);
+        if (!byCountryNorm.has(key)) {
+          byCountryNorm.set(key, { displayName: cName, events: [], yearly: {} });
+        }
+        const entry = byCountryNorm.get(key);
+
+        const models = {};
+        for (const m of MODELS) {
+          models[m.key] = safeNumber(r[m.key]);
+        }
+
+        entry.events.push({
+          country: cName,
+          year: y,
+          began: r.Began,
+          ended: r.Ended,
+          cause: r.MainCause,
+          lat: safeNumber(r.lat),
+          lon: safeNumber(r.lon),
+          duration: safeNumber(r.duration),
+          deaths: safeNumber(r.deaths),
+          area: safeNumber(r.area),
+          models
         });
-      });
 
-      /* ------------------ COLOR SCALE ------------------ */
-      function getColor(v) {
-        if (v == null) return "#e0e0e0";
-        if (v > 1e13) return "#08306b";
-        if (v > 1e12) return "#2171b5";
-        if (v > 1e11) return "#6baed6";
-        if (v > 1e10) return "#c6dbef";
-        return "#eff3ff";
+        if (!entry.yearly[y]) {
+          entry.yearly[y] = { eventsCount: 0 };
+          for (const m of MODELS) entry.yearly[y][m.key] = 0;
+        }
+        entry.yearly[y].eventsCount += 1;
+        for (const m of MODELS) {
+          const v = models[m.key];
+          if (v != null) entry.yearly[y][m.key] += v;
+        }
       }
 
-      function formatUSD(v) {
-        if (v == null) return "NA";
-        return new Intl.NumberFormat("en-US", {
-          notation: "compact",
-          maximumFractionDigits: 2
-        }).format(v);
+      const years = Array.from(yearSet).sort((a,b) => a-b);
+      const minDataYear = years.length ? years[0] : MIN_YEAR;
+      const maxDataYear = years.length ? years[years.length - 1] : MIN_YEAR;
+
+      /* ------------------- UI INIT ------------------- */
+      function addOptions(selectEl, arr, selected) {
+        selectEl.innerHTML = "";
+        for (const v of arr) {
+          const opt = document.createElement("option");
+          opt.value = String(v);
+          opt.textContent = String(v);
+          selectEl.appendChild(opt);
+        }
+        if (selected != null) selectEl.value = String(selected);
       }
 
-      /* ------------------ CHOROPLETH ------------------ */
-      let currentYear = yearCols.includes("2020") ? "2020" : yearCols.at(-1);
+      for (const m of MODELS) {
+        const opt = document.createElement("option");
+        opt.value = m.key;
+        opt.textContent = m.label;
+        modelSelect.appendChild(opt);
 
-      function style(feature) {
-        const iso3 = feature.properties?.ISO_A3;
-        const value = iso3 && iso3 !== "-99" ? gdp[currentYear][iso3] : null;
+        const opt2 = document.createElement("option");
+        opt2.value = m.key;
+        opt2.textContent = m.label;
+        panelModelSel.appendChild(opt2);
+      }
+
+      const defaultModel = "rf_USD";
+      const defaultYear = years.includes(2020) ? 2020 : maxDataYear;
+
+      addOptions(yearSelect, years, defaultYear);
+      addOptions(panelYearSel, years, defaultYear);
+
+      addOptions(startYearSel, years, minDataYear);
+      addOptions(endYearSel, years, maxDataYear);
+
+      modelSelect.value = defaultModel;
+      panelModelSel.value = defaultModel;
+
+      modelSelect.disabled = false;
+      yearSelect.disabled = false;
+      clearBtn.disabled = false;
+
+      statusEl.textContent = "Ready.";
+
+      /* ------------------- COUNTRY JOIN (GeoJSON -> CSV) -------------------
+         We join by normalized names:
+           GeoJSON: ADMIN or NAME
+           CSV:     country
+         If your countries.geojson uses different name fields, edit in getCountryName().
+      */
+      function getCountryName(feature) {
+        return feature.properties?.ADMIN || feature.properties?.NAME || feature.properties?.NAME_EN || "";
+      }
+
+      // Map geo feature -> normalized CSV key
+      function getCountryKeyFromFeature(feature) {
+        const n = getCountryName(feature);
+        return normalizeName(n);
+      }
+
+      /* ------------------- LAYERS ------------------- */
+      let selectedFeatureLayer = null;
+      let selectedCountryKey = null;
+      let countriesLayer = null;
+
+      const eventsLayer = L.layerGroup().addTo(map); // event markers for selected country
+
+      function inPanelYearRange(y) {
+        const a = Number(startYearSel.value);
+        const b = Number(endYearSel.value);
+        return y >= a && y <= b;
+      }
+
+      function currentMapModel() { return modelSelect.value; }
+      function currentMapYear() { return Number(yearSelect.value); }
+
+      function currentPanelModel() { return panelModelSel.value; }
+      function currentPanelYear() { return Number(panelYearSel.value); }
+
+      function getAnnualValue(countryKey, year, modelKey) {
+        const entry = byCountryNorm.get(countryKey);
+        if (!entry) return null;
+        const yr = entry.yearly[year];
+        if (!yr) return null;
+        const v = yr[modelKey];
+        return (v == null || !Number.isFinite(v) || v === 0) ? null : v;
+      }
+
+      function styleCountry(feature) {
+        const key = getCountryKeyFromFeature(feature);
+        const v = getAnnualValue(key, currentMapYear(), currentMapModel());
         return {
-          weight: 0.5,
+          weight: 0.6,
           color: "#666",
-          fillOpacity: 0.75,
-          fillColor: getColor(value)
+          fillOpacity: 0.78,
+          fillColor: getColor(v)
         };
       }
 
-      function onEachFeature(feature, layer) {
-        const name = feature.properties?.ADMIN || feature.properties?.NAME || "Unknown";
-        const iso3 = feature.properties?.ISO_A3 || "NA";
-        const value = iso3 !== "-99" ? gdp[currentYear][iso3] : null;
+      function highlight(layer) { layer.setStyle({ weight: 2.2 }); }
+      function unhighlight(layer) { layer.setStyle({ weight: 0.6 }); }
 
-        layer.bindPopup(
-          `<b>${name}</b><br/>ISO3: ${iso3}<br/>GDP (${currentYear}): ${formatUSD(value)}`
-        );
-
-        layer.on("mouseover", () => layer.setStyle({ weight: 2 }));
-        layer.on("mouseout", () => layer.setStyle({ weight: 0.5 }));
+      function resetSelection() {
+        selectedCountryKey = null;
+        selectedFeatureLayer = null;
+        eventsLayer.clearLayers();
+        panel.classList.add("hidden");
+        if (countriesLayer) countriesLayer.resetStyle();
       }
 
-      const geoLayer = L.geoJSON(countries, {
-        style,
-        onEachFeature
-      }).addTo(map);
+      clearBtn.addEventListener("click", resetSelection);
+      closePanel.addEventListener("click", resetSelection);
 
-      map.fitBounds(geoLayer.getBounds(), { padding: [10, 10] });
+      /* ------------------- CHART ------------------- */
+      let chart = null;
 
-      /* ------------------ YEAR CONTROL ------------------ */
-      yearCols.forEach(y => {
-        const opt = document.createElement("option");
-        opt.value = y;
-        opt.textContent = y;
-        yearSelect.appendChild(opt);
-      });
+      function buildTimeSeries(countryKey, modelKey) {
+        const entry = byCountryNorm.get(countryKey);
+        const xs = [];
+        const ys = [];
+        const counts = [];
 
-      yearSelect.value = currentYear;
-
-      function refresh() {
-        geoLayer.setStyle(style);
-        geoLayer.eachLayer(l => onEachFeature(l.feature, l));
+        for (const y of years) {
+          xs.push(y);
+          const val = entry?.yearly?.[y]?.[modelKey] ?? 0;
+          ys.push(Number.isFinite(val) ? val : 0);
+          counts.push(entry?.yearly?.[y]?.eventsCount ?? 0);
+        }
+        return { xs, ys, counts };
       }
 
-      yearSelect.addEventListener("change", () => {
-        currentYear = yearSelect.value;
-        refresh();
+      function renderChart(countryKey) {
+        const modelKey = currentPanelModel();
+        const { xs, ys, counts } = buildTimeSeries(countryKey, modelKey);
+
+        const ctx = document.getElementById("tsChart").getContext("2d");
+        if (chart) chart.destroy();
+
+        chart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: xs,
+            datasets: [{
+              label: "Annual damages (USD)",
+              data: ys,
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.15
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            scales: {
+              y: {
+                ticks: {
+                  callback: (v) => {
+                    // v is numeric axis tick
+                    const n = Number(v);
+                    if (!Number.isFinite(n)) return v;
+                    return formatUSD(n);
+                  }
+                }
+              }
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => `Damages: ${formatUSD(ctx.parsed.y)}`
+                }
+              }
+            }
+          }
+        });
+
+        // note
+        const totalEvents = byCountryNorm.get(countryKey)?.events?.length ?? 0;
+        const totalDamage = ys.reduce((a,b) => a + (Number.isFinite(b) ? b : 0), 0);
+        tsNote.innerHTML = `
+          <span class="pill">${MODELS.find(m => m.key === modelKey)?.label ?? modelKey}</span>
+          <span class="pill">Events: ${fmtInt(totalEvents)}</span>
+          <span class="pill">Sum (all years): $${formatUSD(totalDamage)}</span>
+        `;
+      }
+
+      /* ------------------- EVENTS MARKERS + LIST ------------------- */
+      function renderEvents(countryKey) {
+        eventsLayer.clearLayers();
+
+        const entry = byCountryNorm.get(countryKey);
+        if (!entry) {
+          eventSummary.textContent = "No matching event data found for this country.";
+          eventsList.innerHTML = "";
+          return;
+        }
+
+        const modelKey = currentPanelModel();
+        const y0 = Number(startYearSel.value);
+        const y1 = Number(endYearSel.value);
+
+        // Filter events
+        const ev = entry.events
+          .filter(e => e.year >= y0 && e.year <= y1)
+          .sort((a,b) => (a.year - b.year) || String(a.began).localeCompare(String(b.began)));
+
+        // Summary
+        let sum = 0;
+        let withVal = 0;
+        for (const e of ev) {
+          const v = e.models[modelKey];
+          if (v != null) { sum += v; withVal++; }
+        }
+        eventSummary.innerHTML = `
+          <span class="pill">Years: ${y0}–${y1}</span>
+          <span class="pill">Events: ${fmtInt(ev.length)}</span>
+          <span class="pill">Sum: $${formatUSD(sum)}</span>
+        `;
+
+        // Markers (optional)
+        if (showEventsChk.checked) {
+          for (const e of ev) {
+            if (e.lat == null || e.lon == null) continue;
+            const v = e.models[modelKey];
+            const popup = `
+              <b>${entry.displayName}</b><br/>
+              <b>${e.began}</b> → ${e.ended}<br/>
+              Cause: ${e.cause ?? "NA"}<br/>
+              Damages (${modelKey}): $${formatUSD(v)}<br/>
+              Deaths: ${fmtInt(e.deaths)}<br/>
+              Area: ${formatUSD(e.area)} (raw units)
+            `;
+            const marker = L.circleMarker([e.lat, e.lon], {
+              radius: 5,
+              weight: 1,
+              fillOpacity: 0.75
+            }).bindPopup(popup);
+            eventsLayer.addLayer(marker);
+          }
+        }
+
+        // Event list (all rows, scrollable)
+        const html = ev.map(e => {
+          const v = e.models[modelKey];
+          return `
+            <div class="event-item">
+              <div class="event-top">
+                <div><b>${e.began}</b> → ${e.ended}</div>
+                <div><b>$${formatUSD(v)}</b></div>
+              </div>
+              <div class="event-cause">Cause: ${e.cause ?? "NA"}</div>
+              <div class="event-meta">
+                Deaths: ${fmtInt(e.deaths)} · Duration: ${fmtInt(e.duration)} · Area: ${formatUSD(e.area)}
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        eventsList.innerHTML = html || `<div class="event-item">No events in selected year range.</div>`;
+      }
+
+      /* ------------------- PANEL UPDATE ------------------- */
+      function openPanelForCountry(countryKey, countryLabel) {
+        selectedCountryKey = countryKey;
+        panelTitle.textContent = countryLabel || (byCountryNorm.get(countryKey)?.displayName ?? "Country");
+        panelSubtitle.textContent = `Click legend + controls to explore models and time window.`;
+
+        panel.classList.remove("hidden");
+
+        // Keep panel controls in sync with map controls by default
+        panelModelSel.value = modelSelect.value;
+        panelYearSel.value = yearSelect.value;
+
+        renderChart(countryKey);
+        renderEvents(countryKey);
+      }
+
+      function refreshPanelIfOpen() {
+        if (!selectedCountryKey) return;
+        renderChart(selectedCountryKey);
+        renderEvents(selectedCountryKey);
+      }
+
+      // Panel control hooks
+      startYearSel.addEventListener("change", () => {
+        if (Number(startYearSel.value) > Number(endYearSel.value)) startYearSel.value = endYearSel.value;
+        refreshPanelIfOpen();
+      });
+      endYearSel.addEventListener("change", () => {
+        if (Number(endYearSel.value) < Number(startYearSel.value)) endYearSel.value = startYearSel.value;
+        refreshPanelIfOpen();
+      });
+      showEventsChk.addEventListener("change", refreshPanelIfOpen);
+      panelModelSel.addEventListener("change", refreshPanelIfOpen);
+      panelYearSel.addEventListener("change", () => {
+        // Highlight year in map dropdown as well (optional synchronization)
+        // If you prefer not to sync, remove the next two lines.
+        yearSelect.value = panelYearSel.value;
+        updateMap();
       });
 
-      yearSelect.disabled = false;
-      statusEl.textContent = "Ready";
-      refresh();
+      /* ------------------- COUNTRY LAYER EVENTS ------------------- */
+      function onEachCountry(feature, layer) {
+        layer.on("mouseover", () => highlight(layer));
+        layer.on("mouseout", () => {
+          if (selectedFeatureLayer && layer === selectedFeatureLayer) {
+            layer.setStyle({ weight: 2.2 });
+          } else {
+            unhighlight(layer);
+          }
+        });
+
+        layer.on("click", () => {
+          if (countriesLayer) countriesLayer.resetStyle();
+          selectedFeatureLayer = layer;
+          layer.setStyle({ weight: 2.2 });
+
+          const key = getCountryKeyFromFeature(feature);
+          const label = getCountryName(feature);
+
+          openPanelForCountry(key, label);
+        });
+
+        // Tooltip/popup for quick map info
+        layer.bindTooltip(() => {
+          const key = getCountryKeyFromFeature(feature);
+          const v = getAnnualValue(key, currentMapYear(), currentMapModel());
+          const nm = getCountryName(feature) || "Country";
+          return `<b>${nm}</b><br/>${currentMapYear()} · ${currentMapModel()}: $${formatUSD(v)}`;
+        }, { sticky: true });
+      }
+
+      /* ------------------- MAP UPDATE ------------------- */
+      function updateMap() {
+        if (countriesLayer) countriesLayer.remove();
+        countriesLayer = L.geoJSON(countriesGeo, {
+          style: styleCountry,
+          onEachFeature: onEachCountry
+        }).addTo(map);
+
+        renderLegend(currentMapModel(), currentMapYear());
+
+        // Keep panel highlight dropdown aligned with map year selector
+        panelYearSel.value = yearSelect.value;
+
+        // If a country is selected, refresh panel (model may have changed) and markers
+        refreshPanelIfOpen();
+      }
+
+      modelSelect.addEventListener("change", () => {
+        // Keep panel model aligned with map model selector (optional synchronization)
+        panelModelSel.value = modelSelect.value;
+        updateMap();
+      });
+      yearSelect.addEventListener("change", updateMap);
+
+      /* ------------------- INITIAL RENDER ------------------- */
+      renderLegend(defaultModel, defaultYear);
+      updateMap();
+
+      // Fit bounds after render
+      try {
+        map.fitBounds(countriesLayer.getBounds(), { padding: [10, 10] });
+      } catch (e) {
+        // ignore
+      }
     });
   </script>
 </body>

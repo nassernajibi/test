@@ -497,39 +497,55 @@
     const whiskerPlugin = {
       id: 'whiskers',
       afterDatasetsDraw(chart) {
-        if (el('modelSelect').value !== 'ensemble') return;
         const {ctx, scales: {x, y}} = chart;
+        const drawWhiskers = el('modelSelect').value === 'ensemble';
+        
         ctx.save();
-        ctx.strokeStyle = '#e53935'; 
+        
+        // Draw points at end of bars
+        ctx.fillStyle = '#1976d2';
+        ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
         dataset.forEach((d, i) => {
           if (d.med === 0) return;
           const xPos = x.getPixelForValue(years[i]);
-          const yMin = y.getPixelForValue(d.min || d.med);
-          const yMax = y.getPixelForValue(d.max || d.med);
-          ctx.beginPath(); ctx.moveTo(xPos, yMin); ctx.lineTo(xPos, yMax); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(xPos - 5, yMin); ctx.lineTo(xPos + 5, yMin); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(xPos - 5, yMax); ctx.lineTo(xPos + 5, yMax); ctx.stroke();
+          const yPos = y.getPixelForValue(d.med);
+          ctx.beginPath();
+          ctx.arc(xPos, yPos, 5, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.stroke();
         });
+        
+        // Draw whiskers only in ensemble mode
+        if (drawWhiskers) {
+          ctx.strokeStyle = '#e53935'; 
+          ctx.lineWidth = 2;
+          dataset.forEach((d, i) => {
+            if (d.med === 0) return;
+            const xPos = x.getPixelForValue(years[i]);
+            const yMin = y.getPixelForValue(d.min || d.med);
+            const yMax = y.getPixelForValue(d.max || d.med);
+            ctx.beginPath(); ctx.moveTo(xPos, yMin); ctx.lineTo(xPos, yMax); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(xPos - 5, yMin); ctx.lineTo(xPos + 5, yMin); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(xPos - 5, yMax); ctx.lineTo(xPos + 5, yMax); ctx.stroke();
+          });
+        }
+        
         ctx.restore();
       }
     };
 
     chart = new Chart(el('tsChart'), {
-      type: 'line',
+      type: 'bar',
       data: {
         labels: years,
         datasets: [{
           data: dataset.map(d => d.med),
           backgroundColor: '#1976d2',
           borderColor: '#0d47a1',
-          borderWidth: 2,
-          pointRadius: 5,
-          pointBackgroundColor: '#1976d2',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          pointHoverRadius: 7,
-          tension: 0
+          borderWidth: 0,
+          borderRadius: 0,
+          barThickness: 3
         }]
       },
       options: {

@@ -1,4 +1,4 @@
-# FLOOD-XML Mapper Dashboard
+# FLOOD-XML Mapper
 
 ## [Launch Dashboard](https://nassernajibi.github.io/FLOOD-XML-Mapper)
 

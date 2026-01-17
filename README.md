@@ -2,6 +2,8 @@
 
 [![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=nassernajibi.FLOOD-XML-Mapper)](https://github.com/nassernajibi/FLOOD-XML-Mapper)
 [![GitHub stars](https://img.shields.io/github/stars/nassernajibi/FLOOD-XML-Mapper?style=social)](https://github.com/nassernajibi/FLOOD-XML-Mapper)
+![GitHub forks](https://img.shields.io/github/forks/nassernajibi/FLOOD-XML-Mapper)
+![GitHub last commit](https://img.shields.io/github/last-commit/nassernajibi/FLOOD-XML-Mapper)
 
 ## [Launch Dashboard →](https://nassernajibi.github.io/FLOOD-XML-Mapper)
 

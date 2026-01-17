@@ -19,7 +19,6 @@
     }
     #map { height: 100%; width: 100%; z-index: 1; background: #cad2d3; }
 
-    /* Left Controls */
     .left-controls { position: absolute; top: 15px; left: 15px; z-index: 1100; display: flex; flex-direction: column; gap: 15px; width: 400px; }
     .topbar, .legend, .stats-card { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
     
@@ -29,12 +28,10 @@
     select, button { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #bbb; font-size: 17px; cursor: pointer; font-family: inherit; }
     button:hover { background: #f0f0f0; border-color: #900; }
 
-    /* Right Sidebar */
     .sidebar { position: absolute; top: 15px; right: 15px; z-index: 1100; background: #fff; width: 400px; max-height: calc(100% - 320px); border-radius: 15px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
     .sidebar.hidden { display: none; }
     .sidebar-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
 
-    /* Centered Bottom Panel */
     .bottom-panel { 
       position: absolute; bottom: 20px; 
       left: 430px; right: 430px;
@@ -51,6 +48,7 @@
 
     .event-item { padding: 12px 0; border-bottom: 1px solid #ddd; font-size: 14px; line-height: 1.6; }
     .pill { background: #ffebeb; color: #800000; padding: 3px 8px; border-radius: 5px; font-size: 11px; border: 1px solid #800000; }
+    .coord-text { font-size: 11px; color: #777; font-style: italic; }
     
     #chartHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
   </style>
@@ -64,9 +62,9 @@
     <div class="brand" style="font-size:22px; color:#800000; margin-bottom:15px; border-bottom: 3px solid #800000;">FLOOD-XML PORTAL</div>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
       <div>
-        <label>Model Logic</label>
+        <label>AI/ML Model</label>
         <select id="modelSelect">
-          <option value="ensemble">Ensemble (Whiskers)</option>
+          <option value="ensemble">Ensemble (median)</option>
           <option value="lm_USD">MLR (Linear)</option>
           <option value="rf_USD">Random Forest</option>
           <option value="xgb_USD">XGBoost</option>
@@ -226,7 +224,7 @@
         if (el('modelSelect').value !== 'ensemble') return;
         const {ctx, scales: {x, y}} = chart;
         ctx.save();
-        ctx.strokeStyle = '#ff0000'; ctx.lineWidth = 2; // Red whiskers for visibility
+        ctx.strokeStyle = '#ff0000'; ctx.lineWidth = 2;
         dataset.forEach((d, i) => {
           if (d.med === 0) return;
           const xPos = x.getPixelForValue(years[i]);
@@ -243,10 +241,10 @@
     chart = new Chart(el('tsChart'), {
       type: 'bar',
       data: {
-        labels: years.map((y, i) => `${y} (${dataset[i].count})`),
+        labels: years, // Reverted to plain years
         datasets: [{
           data: dataset.map(d => d.med),
-          backgroundColor: '#000000', // Black bars
+          backgroundColor: '#000000',
           borderColor: '#000',
           borderWidth: 1
         }]
@@ -254,7 +252,17 @@
       options: {
         maintainAspectRatio: false,
         scales: { y: { type: 'logarithmic', min: 1e5, ticks: { callback: v => formatUSD(v) } } },
-        plugins: { legend: { display: false } }
+        plugins: { 
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    afterBody: (context) => {
+                        const idx = context[0].dataIndex;
+                        return `Events: ${dataset[idx].count}`;
+                    }
+                }
+            }
+        }
       },
       plugins: [whiskerPlugin]
     });
@@ -267,7 +275,8 @@
         <span class="pill">${ev.Began} - ${ev.Ended}</span><br>
         <b>${ev.MainCause}</b><br>
         Duration: ${ev.duration} days | Deaths: ${ev.dead || 0}<br>
-        Area: ${ev.area} km² | Damage: ${formatUSD(dmg)}
+        Area: ${ev.area} km² | Damage: ${formatUSD(dmg)}<br>
+        <span class="coord-text">Coords: ${ev.lat}, ${ev.lon}</span>
       </div>`;
     }).join('');
     

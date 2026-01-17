@@ -578,6 +578,26 @@
               }
             }
           }
+        },
+        animation: {
+          onComplete: function() {
+            // Draw points after animation completes
+            const {ctx, scales: {x, y}} = this;
+            ctx.save();
+            ctx.fillStyle = '#1976d2';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            dataset.forEach((d, i) => {
+              if (d.med === 0) return;
+              const xPos = x.getPixelForValue(years[i]);
+              const yPos = y.getPixelForValue(d.med);
+              ctx.beginPath();
+              ctx.arc(xPos, yPos, 5, 0, 2 * Math.PI);
+              ctx.fill();
+              ctx.stroke();
+            });
+            ctx.restore();
+          }
         }
       },
       plugins: [whiskerPlugin]

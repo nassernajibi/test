@@ -643,6 +643,18 @@
         },
         plugins: { 
           legend: { display: false },
+            title: {
+          display: true,
+        text: `Total Annual Damages (USD) – ${el('countryName').textContent}`,
+        font: {
+          size: 16,
+          weight: 'bold'
+          },
+        padding: {
+          top: 5,
+            bottom: 10
+              }
+                  },
           tooltip: {
             backgroundColor: 'rgba(33, 33, 33, 0.95)',
             padding: 12,
@@ -708,7 +720,7 @@
 
   el('savePng').onclick = () => {
     const link = document.createElement('a');
-    link.download = `FLOOD-CHART-${el('countryName').textContent}.png`;
+    link.download = `FLOOD_XML-USD-${el('countryName').textContent}.png`;
     link.href = el('tsChart').toDataURL('image/png'); 
     link.click();
   };

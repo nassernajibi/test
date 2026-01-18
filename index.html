@@ -290,7 +290,50 @@
       font-size: 13px;
       line-height: 1.5;
     }
-  </style>
+    
+  @media (max-width: 768px) {
+
+    html, body {
+      overflow: auto;
+    }
+
+    .left-controls {
+      left: 10px;
+      top: 10px;
+      width: calc(100% - 20px);
+    }
+
+    .topbar, .legend, .stats-card {
+      padding: 14px;
+    }
+
+    #legend {
+      max-width: 100%;
+    }
+
+    .sidebar {
+      left: 10px;
+      right: 10px;
+      top: auto;
+      bottom: 10px;
+      width: auto;
+      max-height: 45vh;
+    }
+
+    .bottom-panel {
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      height: 220px;
+      padding: 14px 16px;
+    }
+
+    select, button {
+      padding: 12px;
+      font-size: 16px;
+    }
+  }
+</style>
 </head>
 <body>
 

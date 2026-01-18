@@ -409,7 +409,7 @@
       let iso = NAME_TO_ISO[row.country?.toLowerCase().trim()];
       if (!iso) {
         const f = countriesGeo.features.find(feat => feat.properties.ADMIN?.toLowerCase() === row.country?.toLowerCase() || feat.properties.NAME?.toLowerCase() === row.country?.toLowerCase());
-        iso = f ? (f.properties.ISO_A3 || f.properties.ADM0_A3) : null;
+        iso = f ? ((f.properties.ISO_A3 && f.properties.ISO_A3 !== "-99") ? f.properties.ISO_A3 : f.properties.ADM0_A3) : null;
       }
       if (iso && iso !== "-99") {
         if (!eventsByIso.has(iso)) eventsByIso.set(iso, { name: row.country, events: [], annual: {} });
@@ -431,7 +431,7 @@
     const yr = parseInt(el('yearSelect').value), mod = el('modelSelect').value;
     window.gLayer = L.geoJson(countriesGeo, {
       style: f => {
-        const iso = f.properties.ISO_A3 || f.properties.ADM0_A3 || NAME_TO_ISO[f.properties.ADMIN?.toLowerCase()];
+        const iso = ((f.properties.ISO_A3 && f.properties.ISO_A3 !== "-99") ? f.properties.ISO_A3 : f.properties.ADM0_A3) || NAME_TO_ISO[f.properties.ADMIN?.toLowerCase()];
         const rows = eventsByIso.get(iso)?.annual[yr] || [];
         let val = (rows.length > 0) ? (mod === 'ensemble' ? getStats(rows).med : rows.reduce((s,r) => s + (parseFloat(r[mod])||0), 0)) : 0;
         return { fillColor: getColor(val), weight: 0.8, color: '#fff', fillOpacity: 0.85 };
@@ -439,7 +439,7 @@
       onEachFeature: (f, l) => {
         l.on({
           click: () => {
-            selectedIso = f.properties.ISO_A3 || f.properties.ADM0_A3 || NAME_TO_ISO[f.properties.ADMIN?.toLowerCase()];
+            selectedIso = ((f.properties.ISO_A3 && f.properties.ISO_A3 !== "-99") ? f.properties.ISO_A3 : f.properties.ADM0_A3) || NAME_TO_ISO[f.properties.ADMIN?.toLowerCase()];
             el('sidebar').classList.remove('hidden'); 
             el('bottomPanel').classList.remove('hidden'); 
             el('statsBox').classList.remove('hidden');

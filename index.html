@@ -321,7 +321,7 @@
   </div>
 
   <div id="legend" class="legend">
-    <label style="font-weight: 600; text-transform: none; color: #212121; font-size: 13px; margin-bottom: 10px;">Total Annual Damages (USD)</label>
+    <label style="font-weight: 600; text-transform: none; color: #212121; font-size: 13px; margin-bottom: 10px;">Annual Damages (USD)</label>
     <div id="legendItems"></div>
   </div>
 
@@ -346,7 +346,7 @@
 
 <div id="bottomPanel" class="bottom-panel hidden">
   <div id="chartHeader">
-    <div>📊 Total Annual Damages (USD)</div>
+    <div>📊 Annual Damages (USD)</div>
     <button id="savePng">💾 Export PNG</button>
   </div>
   <div style="height:220px; width:100%;"><canvas id="tsChart"></canvas></div>
@@ -402,6 +402,11 @@
     countriesGeo = await geoRes.json();
     fullData = Papa.parse(await csvRes.text(), { header: true, skipEmptyLines: true }).data;
 
+    // Debug: Log unique countries
+    const uniqueCountries = [...new Set(fullData.map(r => r.country).filter(Boolean))];
+    console.log('Countries in CSV:', uniqueCountries.sort());
+    console.log('Total events:', fullData.length);
+
     fullData.forEach(row => {
       const y = parseInt(row.Began?.split('/')[0]);
       if (!y) return;
@@ -410,6 +415,9 @@
       if (!iso) {
         const f = countriesGeo.features.find(feat => feat.properties.ADMIN?.toLowerCase() === row.country?.toLowerCase() || feat.properties.NAME?.toLowerCase() === row.country?.toLowerCase());
         iso = f ? (f.properties.ISO_A3 || f.properties.ADM0_A3) : null;
+        if (!iso && row.country) {
+          console.log(`Could not match country: "${row.country}"`);
+        }
       }
       if (iso && iso !== "-99") {
         if (!eventsByIso.has(iso)) eventsByIso.set(iso, { name: row.country, events: [], annual: {} });
@@ -419,6 +427,8 @@
         entry.annual[y].push(row);
       }
     });
+
+    console.log('Countries successfully mapped:', Array.from(eventsByIso.keys()));
 
     years = [...new Set(years)].sort();
     years.forEach(y => { el('yearSelect').add(new Option(y, y)); el('startYear').add(new Option(y, y)); el('endYear').add(new Option(y, y)); });

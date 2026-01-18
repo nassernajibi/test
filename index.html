@@ -377,7 +377,14 @@
   const COLORS = ["#d4c300", "#e6a300", "#f77f00", "#d62828", "#9d0208", "#6a040f", "#370617", "#03071e"];
   const BASE_MODELS = ["lm_USD", "rf_USD", "xgb_USD", "svr_USD", "brnn_USD", "knn_USD"];
   
-  const NAME_TO_ISO = { "usa": "USA", "uk": "GBR", "russia": "RUS", "vietnam": "VNM", "south korea": "KOR" };
+  const NAME_TO_ISO = { 
+    "usa": "USA", 
+    "uk": "GBR", 
+    "russia": "RUS", 
+    "vietnam": "VNM", 
+    "south korea": "KOR",
+    "france": "FRA"
+  };
 
   let fullData = [], countriesGeo, eventsByIso = new Map(), years = [], chart, selectedIso = null;
   let eventMarkers = L.layerGroup();
@@ -428,7 +435,20 @@
       }
     });
 
-    console.log('Countries successfully mapped:', Array.from(eventsByIso.keys()));
+    // Debug: Check for France specifically
+    const franceEvents = fullData.filter(r => r.country?.toLowerCase().includes('france'));
+    console.log('France events found:', franceEvents.length);
+    if (franceEvents.length > 0) {
+      console.log('First France event:', franceEvents[0]);
+    }
+    
+    // Check GeoJSON for France
+    const franceGeo = countriesGeo.features.find(f => 
+      f.properties.ADMIN?.toLowerCase().includes('france') || 
+      f.properties.NAME?.toLowerCase().includes('france') ||
+      f.properties.ISO_A3 === 'FRA'
+    );
+    console.log('France in GeoJSON:', franceGeo?.properties);
 
     years = [...new Set(years)].sort();
     years.forEach(y => { el('yearSelect').add(new Option(y, y)); el('startYear').add(new Option(y, y)); el('endYear').add(new Option(y, y)); });

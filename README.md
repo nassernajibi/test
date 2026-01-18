@@ -5,7 +5,7 @@
 ![GitHub forks](https://img.shields.io/github/forks/nassernajibi/FLOOD-XML-Mapper)
 ![GitHub last commit](https://img.shields.io/github/last-commit/nassernajibi/FLOOD-XML-Mapper)
 
-## [Launch Dashboard →](https://nassernajibi.github.io/FLOOD-XML-Mapper)
+## [Launch FLOOD-XML Portal →](https://nassernajibi.github.io/FLOOD-XML-Mapper)
 
 Interactive mapping tool for visualizing flood damage data from the [FLOOD-XML dataset](https://github.com/nassernajibi/FLOOD-XML)
 

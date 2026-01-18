@@ -379,11 +379,16 @@
   
   const NAME_TO_ISO = { 
     "usa": "USA", 
-    "uk": "GBR", 
+    "united states": "USA",
+    "uk": "GBR",
+    "united kingdom": "GBR",
     "russia": "RUS", 
+    "russian federation": "RUS",
     "vietnam": "VNM", 
     "south korea": "KOR",
-    "france": "FRA"
+    "korea, south": "KOR",
+    "france": "FRA",
+    "french republic": "FRA"
   };
 
   let fullData = [], countriesGeo, eventsByIso = new Map(), years = [], chart, selectedIso = null;

@@ -507,7 +507,6 @@
       }
     });
 
-    const mod = el('modelSelect').value;
     const dataset = years.map(y => { 
         const rs = entry?.annual[y] || [];
         if (rs.length === 0) return {total:0, min:0, max:0, count:0};
@@ -539,9 +538,9 @@
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
         dataset.forEach((d, i) => {
-          if (d.med === 0) return;
+          if (d.total === 0) return;
           const xPos = x.getPixelForValue(years[i]);
-          const yPos = y.getPixelForValue(d.med);
+          const yPos = y.getPixelForValue(d.total);
           ctx.beginPath();
           ctx.arc(xPos, yPos, 5, 0, 2 * Math.PI);
           ctx.fill();
@@ -553,10 +552,10 @@
           ctx.strokeStyle = '#e53935'; 
           ctx.lineWidth = 2;
           dataset.forEach((d, i) => {
-            if (d.med === 0) return;
+            if (d.total === 0) return;
             const xPos = x.getPixelForValue(years[i]);
-            const yMin = y.getPixelForValue(d.min || d.med);
-            const yMax = y.getPixelForValue(d.max || d.med);
+            const yMin = y.getPixelForValue(d.min || d.total);
+            const yMax = y.getPixelForValue(d.max || d.total);
             ctx.beginPath(); ctx.moveTo(xPos, yMin); ctx.lineTo(xPos, yMax); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(xPos - 5, yMin); ctx.lineTo(xPos + 5, yMin); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(xPos - 5, yMax); ctx.lineTo(xPos + 5, yMax); ctx.stroke();

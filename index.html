@@ -384,7 +384,7 @@
 
   const el = id => document.getElementById(id);
   const map = L.map('map').setView([20, 0], 2);
-    const worldBounds = L.latLngBounds([[-85, -180], [85, 180]]);
+  const worldBounds = L.latLngBounds([[-85, -270], [85, 270]]);
   map.setMaxBounds(worldBounds);
   map.options.maxBoundsViscosity = 1.0;
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {

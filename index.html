@@ -507,9 +507,21 @@
       }
     });
 
+    const mod = el('modelSelect').value;
     const dataset = years.map(y => { 
-        const rs = entry?.annual[y] || []; 
-        return rs.length === 0 ? {med:0,min:0,max:0, count:0} : {...getStats(rs), count: rs.length}; 
+        const rs = entry?.annual[y] || [];
+        if (rs.length === 0) return {total:0, min:0, max:0, count:0};
+        
+        if (mod === 'ensemble') {
+          // For ensemble: sum of medians for each event
+          const total = rs.reduce((sum, r) => sum + getStats(r).med, 0);
+          const stats = getStats(rs);
+          return {total, min: stats.min, max: stats.max, count: rs.length};
+        } else {
+          // For individual models: sum of that model's predictions
+          const total = rs.reduce((sum, r) => sum + (parseFloat(r[mod]) || 0), 0);
+          return {total, min: 0, max: 0, count: rs.length};
+        }
     });
 
     if (chart) chart.destroy();
@@ -560,7 +572,7 @@
       data: {
         labels: years,
         datasets: [{
-          data: dataset.map(d => d.med),
+          data: dataset.map(d => d.total),
           backgroundColor: '#1976d2',
           borderColor: '#0d47a1',
           borderWidth: 0,
@@ -608,9 +620,9 @@
             ctx.strokeStyle = '#fff';
             ctx.lineWidth = 2;
             dataset.forEach((d, i) => {
-              if (d.med === 0) return;
+              if (d.total === 0) return;
               const xPos = x.getPixelForValue(years[i]);
-              const yPos = y.getPixelForValue(d.med);
+              const yPos = y.getPixelForValue(d.total);
               ctx.beginPath();
               ctx.arc(xPos, yPos, 5, 0, 2 * Math.PI);
               ctx.fill();

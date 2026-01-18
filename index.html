@@ -15,7 +15,6 @@
       height: 100%; margin: 0; 
       font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif; 
       overflow: hidden; font-size: 14px; 
-      font-weight: 400;
       background: #f8f9fa;
     }
     #map { height: 100%; width: 100%; z-index: 1; background: #e3f2fd; }
@@ -28,265 +27,45 @@
     .topbar, .legend, .stats-card { 
       background: rgba(255, 255, 255, 0.98); 
       backdrop-filter: blur(10px);
-      padding: 20px; 
-      border-radius: 12px; 
-      box-shadow: 0 4px 16px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08);
+      padding: 20px; border-radius: 12px; 
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
       border: 1px solid rgba(0,0,0,0.06);
-      transition: all 0.3s ease;
     }
     
-    .topbar:hover, .legend:hover, .stats-card:hover {
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.1);
-    }
-    
-    .topbar label { 
-      font-size: 11px; 
-      font-weight: 600; 
-      color: #5f6368; 
-      text-transform: uppercase; 
-      letter-spacing: 0.5px;
-      display: block; 
-      margin-bottom: 8px; 
+    .brand {
+      font-size: 20px; font-weight: 800;
+      background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 16px; padding-bottom: 12px; border-bottom: 3px solid #1976d2;
     }
 
     select, button { 
-      width: 100%; 
-      padding: 10px 12px; 
-      border-radius: 8px; 
-      border: 1.5px solid #e0e0e0; 
-      font-size: 14px; 
-      cursor: pointer; 
-      font-family: inherit;
-      background: white;
-      transition: all 0.2s ease;
-      font-weight: 500;
-    }
-    
-    select:hover, button:hover { 
-      border-color: #1565c0;
-      box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
-    }
-    
-    select:focus, button:focus {
-      outline: none;
-      border-color: #1565c0;
-      box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.15);
+      width: 100%; padding: 10px; border-radius: 8px; 
+      border: 1.5px solid #e0e0e0; font-family: inherit; font-weight: 500;
     }
     
     button {
       background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-      color: white;
-      border: none;
-      font-weight: 600;
-    }
-    
-    button:hover {
-      background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(21, 101, 192, 0.3);
-    }
-    
-    #clearBtn {
-      background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
-    }
-    
-    #clearBtn:hover {
-      background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
-      box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
+      color: white; border: none; cursor: pointer;
     }
 
     .sidebar { 
       position: absolute; top: 20px; right: 20px; z-index: 1100; 
-      background: rgba(255, 255, 255, 0.98); 
-      backdrop-filter: blur(10px);
-      width: 380px; 
-      max-height: calc(100% - 360px); 
-      border-radius: 12px; 
-      box-shadow: 0 8px 32px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
-      border: 1px solid rgba(0,0,0,0.06);
-      display: flex; 
-      flex-direction: column;
-      animation: slideIn 0.3s ease;
+      background: white; width: 380px; max-height: calc(100% - 360px); 
+      border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      display: flex; flex-direction: column;
     }
-    
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(20px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-    
-    .sidebar.hidden { display: none; }
-    .sidebar-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
-    
-    .sidebar-body::-webkit-scrollbar { width: 8px; }
-    .sidebar-body::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-    .sidebar-body::-webkit-scrollbar-thumb { background: #1976d2; border-radius: 4px; }
-    .sidebar-body::-webkit-scrollbar-thumb:hover { background: #1565c0; }
 
     .bottom-panel { 
-      position: absolute; bottom: 20px; 
-      left: 420px; right: 420px;
-      z-index: 1100; 
-      background: rgba(255, 255, 255, 0.98); 
-      backdrop-filter: blur(10px);
-      height: 300px; 
-      border-radius: 12px; 
-      box-shadow: 0 -4px 24px rgba(0,0,0,0.15), 0 -1px 6px rgba(0,0,0,0.08);
-      border: 1px solid rgba(0,0,0,0.06);
-      padding: 20px 30px; 
-      box-sizing: border-box;
-      animation: slideUp 0.3s ease;
-    }
-    
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .bottom-panel.hidden { display: none; }
-
-    .legend-row { 
-      display: flex; 
-      align-items: center; 
-      gap: 10px; 
-      margin: 6px 0; 
-      font-size: 13px;
-      padding: 4px 0;
-      transition: all 0.2s ease;
-    }
-    
-    .legend-row:hover {
-      background: #f5f5f5;
-      padding-left: 8px;
-      border-radius: 6px;
-    }
-    
-    .swatch { 
-      width: 32px; 
-      height: 20px; 
-      border-radius: 6px; 
-      border: 1px solid rgba(0,0,0,0.15);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    
-    .stats-card { 
-      border-left: 4px solid #1976d2;
-    }
-    
-    .stat-val { 
-      font-size: 20px; 
-      font-weight: 700;
-      color: #1565c0;
-      background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      position: absolute; bottom: 20px; left: 420px; right: 420px;
+      z-index: 1100; background: white; height: 300px; 
+      border-radius: 12px; padding: 20px; box-shadow: 0 -4px 24px rgba(0,0,0,0.15);
     }
 
-    .event-item { 
-      padding: 14px; 
-      margin: 8px 0;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 13px; 
-      line-height: 1.6;
-      background: white;
-      transition: all 0.2s ease;
-    }
-    
-    .event-item:hover {
-      border-color: #1976d2;
-      box-shadow: 0 2px 8px rgba(21, 101, 192, 0.1);
-      transform: translateX(4px);
-    }
-    
-    .pill { 
-      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-      color: #0d47a1; 
-      padding: 4px 10px; 
-      border-radius: 12px; 
-      font-size: 11px;
-      font-weight: 600;
-      display: inline-block;
-      border: 1px solid #90caf9;
-    }
-    
-    .coord-text { 
-      font-size: 11px; 
-      color: #9e9e9e; 
-      font-style: italic;
-      font-family: 'Courier New', monospace;
-    }
-    
-    #chartHeader { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #e0e0e0;
-    }
-    
-    #chartHeader > div {
-      font-size: 16px;
-      font-weight: 700;
-      color: #212121;
-      letter-spacing: 0.3px;
-    }
-    
-    #savePng {
-      width: auto;
-      padding: 8px 16px;
-      background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%);
-      font-size: 13px;
-    }
-    
-    #savePng:hover {
-      background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
-      box-shadow: 0 4px 12px rgba(67, 160, 71, 0.3);
-    }
-    
-    .brand {
-      font-size: 20px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #1976d2 0%, #0d47a1 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 3px solid #1976d2;
-      letter-spacing: 0.5px;
-    }
-    
-    #countryName {
-      font-size: 24px;
-      font-weight: 700;
-      color: #212121;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid #e0e0e0;
-    }
-    
-    .section-header {
-      font-size: 12px;
-      font-weight: 700;
-      color: #5f6368;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      margin: 16px 0 12px 0;
-      padding-bottom: 8px;
-      border-bottom: 2px solid #e0e0e0;
-    }
-
-    .leaflet-popup-content-wrapper {
-      border-radius: 8px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    }
-    
-    .leaflet-popup-content {
-      font-size: 13px;
-      line-height: 1.5;
-    }
+    .hidden { display: none !important; }
+    .stat-val { font-size: 20px; font-weight: 700; color: #1565c0; }
+    .swatch { width: 30px; height: 18px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); }
+    .legend-row { display: flex; align-items: center; gap: 10px; margin: 5px 0; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -298,7 +77,7 @@
     <div class="brand">🌊 FLOOD-XML PORTAL</div>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
       <div>
-        <label>AI/ML Model</label>
+        <label style="font-size:10px; font-weight:700; color:#666;">AI MODEL</label>
         <select id="modelSelect">
           <option value="ensemble">📊 Ensemble (median)</option>
           <option value="lm_USD">📈 MLR (Linear)</option>
@@ -310,281 +89,62 @@
         </select>
       </div>
       <div>
-        <label>Display Year</label>
+        <label style="font-size:10px; font-weight:700; color:#666;">YEAR</label>
         <select id="yearSelect"></select>
       </div>
     </div>
     <div style="margin-top:12px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-      <button id="dlCountry">📥 Download CSV</button>
-      <button id="clearBtn">🔄 Reset Map</button>
+      <button id="dlCountry">📥 CSV</button>
+      <button id="clearBtn" style="background: #e53935;">🔄 Reset</button>
     </div>
   </div>
 
   <div id="legend" class="legend">
-    <label style="font-weight: 600; text-transform: none; color: #212121; font-size: 13px; margin-bottom: 10px;">Annual Damages (USD)</label>
+    <label style="font-weight:700; font-size:12px; display:block; margin-bottom:10px;">Annual Damage (USD)</label>
     <div id="legendItems"></div>
   </div>
 
   <div id="statsBox" class="stats-card hidden">
-    <label style="font-weight: 600; text-transform: none; color: #212121; font-size: 13px; margin-bottom: 10px;">📍 Country Summary</label>
-    <div id="countryStats" style="font-size: 14px; line-height: 1.6;"></div>
+    <div id="countryStats"></div>
   </div>
 </div>
 
 <div id="sidebar" class="sidebar hidden">
-  <div class="sidebar-body">
-    <div id="countryName">Country</div>
-    <label style="font-size: 11px; font-weight: 600; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px;">Year Range</label>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px;">
-      <select id="startYear"></select>
-      <select id="endYear"></select>
-    </div>
-    <div class="section-header">📋 Event Attributes</div>
+  <div style="padding:20px; overflow-y:auto;">
+    <div id="countryName" style="font-size:22px; font-weight:800; margin-bottom:15px;">Country</div>
     <div id="eventsList"></div>
   </div>
 </div>
 
 <div id="bottomPanel" class="bottom-panel hidden">
-  <div id="chartHeader">
-    <div>📊 Annual Damages (USD)</div>
-    <button id="savePng">💾 Export PNG</button>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+    <div style="font-weight:700;">📈 Historical Annual Damage (Log Scale)</div>
+    <button id="savePng" style="width:auto; padding:5px 15px; font-size:12px; background:#43a047;">Export PNG</button>
   </div>
-  <div style="height:220px; width:100%;"><canvas id="tsChart"></canvas></div>
-</div>
-
-<!-- Visitor Counter -->
-<div style="position: absolute; bottom: 15px; right: 15px; z-index: 2000; 
-            background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
-            padding: 10px 16px; border-radius: 10px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border: 1px solid rgba(0,0,0,0.06);
-            font-size: 12px; font-weight: 600; color: #1976d2;">
-  👁️ <span id="visitor-count">---</span> visitors
+  <div style="height:210px;"><canvas id="tsChart"></canvas></div>
 </div>
 
 <script>
-  // Visitor counter
-  fetch('https://api.countapi.xyz/hit/flood-xml-mapper-portal/visits')
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById('visitor-count').textContent = data.value.toLocaleString();
-    })
-    .catch(() => {
-      document.getElementById('visitor-count').textContent = '---';
-    });
-
   const BINS = [0, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11];
   const COLORS = ["#d4c300", "#e6a300", "#f77f00", "#d62828", "#9d0208", "#6a040f", "#370617", "#03071e"];
   const BASE_MODELS = ["lm_USD", "rf_USD", "xgb_USD", "svr_USD", "brnn_USD", "knn_USD"];
   
+  // Comprehensive mapping for France and major regions
   const NAME_TO_ISO = { 
-    "usa": "USA", 
-    "united states": "USA",
-    "uk": "GBR",
-    "united kingdom": "GBR",
-    "great britain": "GBR",
-    "russia": "RUS", 
-    "russian federation": "RUS",
-    "vietnam": "VNM", 
-    "viet nam": "VNM",
-    "south korea": "KOR",
-    "korea, south": "KOR",
-    "republic of korea": "KOR",
-    "france": "FRA",
-    "french republic": "FRA",
-    "china": "CHN",
-    "people's republic of china": "CHN",
-    "india": "IND",
-    "brazil": "BRA",
-    "bangladesh": "BGD",
-    "philippines": "PHL",
-    "iran": "IRN",
-    "islamic republic of iran": "IRN",
-    "pakistan": "PAK",
-    "mexico": "MEX",
-    "thailand": "THA",
-    "sri lanka": "LKA",
-    "nepal": "NPL",
-    "australia": "AUS",
-    "afghanistan": "AFG",
-    "colombia": "COL",
-    "nigeria": "NGA",
-    "myanmar": "MMR",
-    "burma": "MMR",
-    "ethiopia": "ETH",
-    "turkey": "TUR",
-    "türkiye": "TUR",
-    "peru": "PER",
-    "malaysia": "MYS",
-    "algeria": "DZA",
-    "kenya": "KEN",
-    "south africa": "ZAF",
-    "argentina": "ARG",
-    "chile": "CHL",
-    "mozambique": "MOZ",
-    "tanzania": "TZA",
-    "uganda": "UGA",
-    "yemen": "YEM",
-    "sudan": "SDN",
-    "south sudan": "SSD",
-    "democratic republic of the congo": "COD",
-    "dr congo": "COD",
-    "drc": "COD",
-    "republic of congo": "COG",
-    "congo": "COG",
-    "romania": "ROU",
-    "ghana": "GHA",
-    "ecuador": "ECU",
-    "bolivia": "BOL",
-    "cambodia": "KHM",
-    "niger": "NER",
-    "chad": "TCD",
-    "zimbabwe": "ZWE",
-    "papua new guinea": "PNG",
-    "png": "PNG",
-    "zambia": "ZMB",
-    "malawi": "MWI",
-    "rwanda": "RWA",
-    "burundi": "BDI",
-    "angola": "AGO",
-    "madagascar": "MDG",
-    "mali": "MLI",
-    "burkina faso": "BFA",
-    "senegal": "SEN",
-    "guinea": "GIN",
-    "sierra leone": "SLE",
-    "liberia": "LBR",
-    "ivory coast": "CIV",
-    "cote d'ivoire": "CIV",
-    "cameroon": "CMR",
-    "central african republic": "CAF",
-    "car": "CAF",
-    "benin": "BEN",
-    "togo": "TGO",
-    "mauritania": "MRT",
-    "somalia": "SOM",
-    "djibouti": "DJI",
-    "nicaragua": "NIC",
-    "honduras": "HND",
-    "guatemala": "GTM",
-    "el salvador": "SLV",
-    "costa rica": "CRI",
-    "panama": "PAN",
-    "haiti": "HTI",
-    "dominican republic": "DOM",
-    "jamaica": "JAM",
-    "cuba": "CUB",
-    "puerto rico": "PRI",
-    "trinidad": "TTO",
-    "tobago": "TTO",
-    "trinidad and tobago": "TTO",
-    "venezuela": "VEN",
-    "guyana": "GUY",
-    "suriname": "SUR",
-    "belize": "BLZ",
-    "uruguay": "URY",
-    "paraguay": "PRY",
-    "canada": "CAN",
-    "japan": "JPN",
-    "new zealand": "NZL",
-    "fiji": "FJI",
-    "indonesia": "IDN",
-    "laos": "LAO",
-    "timor-leste": "TLS",
-    "east timor": "TLS",
-    "mongolia": "MNG",
-    "north korea": "PRK",
-    "spain": "ESP",
-    "italy": "ITA",
-    "germany": "DEU",
-    "poland": "POL",
-    "ukraine": "UKR",
-    "czech republic": "CZE",
-    "czechia": "CZE",
-    "slovakia": "SVK",
-    "hungary": "HUN",
-    "austria": "AUT",
-    "switzerland": "CHE",
-    "belgium": "BEL",
-    "netherlands": "NLD",
-    "portugal": "PRT",
-    "greece": "GRC",
-    "serbia": "SRB",
-    "croatia": "HRV",
-    "bosnia and herzegovina": "BIH",
-    "albania": "ALB",
-    "north macedonia": "MKD",
-    "macedonia": "MKD",
-    "bulgaria": "BGR",
-    "moldova": "MDA",
-    "belarus": "BLR",
-    "lithuania": "LTU",
-    "latvia": "LVA",
-    "estonia": "EST",
-    "georgia": "GEO",
-    "armenia": "ARM",
-    "azerbaijan": "AZE",
-    "kazakhstan": "KAZ",
-    "uzbekistan": "UZB",
-    "turkmenistan": "TKM",
-    "kyrgyzstan": "KGZ",
-    "tajikistan": "TJK",
-    "saudi arabia": "SAU",
-    "united arab emirates": "ARE",
-    "uae": "ARE",
-    "oman": "OMN",
-    "jordan": "JOR",
-    "lebanon": "LBN",
-    "syria": "SYR",
-    "iraq": "IRQ",
-    "egypt": "EGY",
-    "tunisia": "TUN",
-    "morocco": "MAR",
-    "libya": "LBY",
-    "israel": "ISR",
-    "palestine": "PSE",
-    "botswana": "BWA",
-    "namibia": "NAM",
-    "lesotho": "LSO",
-    "swaziland": "SWZ",
-    "eswatini": "SWZ",
-    "mauritius": "MUS",
-    "seychelles": "SYC",
-    "comoros": "COM",
-    "singapore": "SGP",
-    "brunei": "BRN",
-    "bhutan": "BTN",
-    "maldives": "MDV",
-    "american samoa": "ASM",
-    "guam": "GUM",
-    "vanuatu": "VUT",
-    "norway": "NOR",
-    "sweden": "SWE",
-    "finland": "FIN",
-    "denmark": "DNK",
-    "iceland": "ISL",
-    "ireland": "IRL",
-    "slovenia": "SVN",
-    "montenegro": "MNE",
-    "malta": "MLT",
-    "luxembourg": "LUX",
-    "cyprus": "CYP",
-    "bermuda": "BMU",
-    "dominica": "DMA",
-    "saint lucia": "LCA"
+    "usa": "USA", "united states": "USA", "uk": "GBR", "united kingdom": "GBR",
+    "russia": "RUS", "vietnam": "VNM", "south korea": "KOR", "france": "FRA",
+    "brazil": "BRA", "china": "CHN", "india": "IND", "germany": "DEU"
   };
 
   let fullData = [], countriesGeo, eventsByIso = new Map(), years = [], chart, selectedIso = null;
   let eventMarkers = L.layerGroup();
-
   const el = id => document.getElementById(id);
+  
   const map = L.map('map').setView([20, 0], 2);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
   eventMarkers.addTo(map);
 
-  const formatUSD = n => n ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 }).format(n) : "$0";
+  const formatUSD = n => n ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact' }).format(n) : "$0";
 
   function getStats(rowOrArray) {
     const vals = Array.isArray(rowOrArray) ? rowOrArray.map(r => BASE_MODELS.map(m => parseFloat(r[m]) || 0)).flat() : BASE_MODELS.map(m => parseFloat(rowOrArray[m]) || 0);
@@ -593,27 +153,31 @@
   }
 
   async function init() {
-    const [geoRes, csvRes] = await Promise.all([fetch('./data/countries.geojson'), fetch('./data/DFO21_damages_wt_EMDAT21.csv')]);
+    const [geoRes, csvRes] = await Promise.all([
+      fetch('./data/countries.geojson'), 
+      fetch('./data/DFO21_damages_wt_EMDAT21.csv')
+    ]);
     countriesGeo = await geoRes.json();
-    fullData = Papa.parse(await csvRes.text(), { header: true, skipEmptyLines: true }).data;
-
-    // Debug: Log unique countries
-    const uniqueCountries = [...new Set(fullData.map(r => r.country).filter(Boolean))];
-    console.log('Countries in CSV:', uniqueCountries.sort());
-    console.log('Total events:', fullData.length);
+    const csvText = await csvRes.text();
+    fullData = Papa.parse(csvText, { header: true, skipEmptyLines: true }).data;
 
     fullData.forEach(row => {
       const y = parseInt(row.Began?.split('/')[0]);
-      if (!y) return;
+      if (!y || !row.country) return;
       years.push(y);
-      let iso = NAME_TO_ISO[row.country?.toLowerCase().trim()];
+      
+      const cleanName = row.country.toLowerCase().trim();
+      let iso = NAME_TO_ISO[cleanName];
+
       if (!iso) {
-        const f = countriesGeo.features.find(feat => feat.properties.ADMIN?.toLowerCase() === row.country?.toLowerCase() || feat.properties.NAME?.toLowerCase() === row.country?.toLowerCase());
-        iso = f ? (f.properties.ISO_A3 || f.properties.ADM0_A3) : null;
-        if (!iso && row.country) {
-          console.log(`Could not match country: "${row.country}"`);
-        }
+        const feat = countriesGeo.features.find(f => 
+          f.properties.ADMIN?.toLowerCase() === cleanName || 
+          f.properties.NAME?.toLowerCase() === cleanName ||
+          f.properties.ISO_A3 === row.country.toUpperCase()
+        );
+        iso = feat ? (feat.properties.ISO_A3 || feat.properties.ADM0_A3) : null;
       }
+
       if (iso && iso !== "-99") {
         if (!eventsByIso.has(iso)) eventsByIso.set(iso, { name: row.country, events: [], annual: {} });
         const entry = eventsByIso.get(iso);
@@ -623,278 +187,79 @@
       }
     });
 
-    // Debug: Check for France specifically
-    const franceEvents = fullData.filter(r => r.country?.toLowerCase().includes('france'));
-    console.log('France events found:', franceEvents.length);
-    if (franceEvents.length > 0) {
-      console.log('First France event:', franceEvents[0]);
-    }
-    
-    // Check GeoJSON for France
-    const franceGeo = countriesGeo.features.find(f => 
-      f.properties.ADMIN?.toLowerCase().includes('france') || 
-      f.properties.NAME?.toLowerCase().includes('france') ||
-      f.properties.ISO_A3 === 'FRA'
-    );
-    console.log('France in GeoJSON:', franceGeo?.properties);
-
     years = [...new Set(years)].sort();
-    years.forEach(y => { el('yearSelect').add(new Option(y, y)); el('startYear').add(new Option(y, y)); el('endYear').add(new Option(y, y)); });
-    el('yearSelect').value = years[years.length - 1]; el('endYear').value = years[years.length - 1];
-    renderLegend(); updateMap();
+    years.forEach(y => el('yearSelect').add(new Option(y, y)));
+    el('yearSelect').value = years[years.length - 1];
+    
+    renderLegend(); 
+    updateMap();
   }
 
   function updateMap() {
     if (window.gLayer) map.removeLayer(window.gLayer);
     const yr = parseInt(el('yearSelect').value), mod = el('modelSelect').value;
+
     window.gLayer = L.geoJson(countriesGeo, {
       style: f => {
         const iso = f.properties.ISO_A3 || f.properties.ADM0_A3 || NAME_TO_ISO[f.properties.ADMIN?.toLowerCase()];
         const rows = eventsByIso.get(iso)?.annual[yr] || [];
-        let val = (rows.length > 0) ? (mod === 'ensemble' ? getStats(rows).med : rows.reduce((s,r) => s + (parseFloat(r[mod])||0), 0)) : 0;
-        return { fillColor: getColor(val), weight: 0.8, color: '#fff', fillOpacity: 0.85 };
+        let val = (rows.length > 0) ? (mod === 'ensemble' ? rows.reduce((s,r) => s + getStats(r).med, 0) : rows.reduce((s,r) => s + (parseFloat(r[mod])||0), 0)) : 0;
+        return { fillColor: getColor(val), weight: 0.8, color: '#fff', fillOpacity: 0.8 };
       },
       onEachFeature: (f, l) => {
-        l.on({
-          click: () => {
-            selectedIso = f.properties.ISO_A3 || f.properties.ADM0_A3 || NAME_TO_ISO[f.properties.ADMIN?.toLowerCase()];
-            el('sidebar').classList.remove('hidden'); 
-            el('bottomPanel').classList.remove('hidden'); 
-            el('statsBox').classList.remove('hidden');
-            el('countryName').textContent = f.properties.ADMIN || f.properties.NAME;
-            refreshUI();
-          },
-          mouseover: e => {
-            e.target.setStyle({ weight: 2, color: '#1976d2' });
-          },
-          mouseout: e => {
-            window.gLayer.resetStyle(e.target);
-          }
+        l.on('click', () => {
+          selectedIso = f.properties.ISO_A3 || f.properties.ADM0_A3 || NAME_TO_ISO[f.properties.ADMIN?.toLowerCase()];
+          if (!eventsByIso.has(selectedIso)) return;
+          el('sidebar').classList.remove('hidden');
+          el('bottomPanel').classList.remove('hidden');
+          el('statsBox').classList.remove('hidden');
+          el('countryName').textContent = f.properties.ADMIN || f.properties.NAME;
+          refreshUI();
         });
       }
     }).addTo(map);
   }
 
-  function getColor(v) { 
-    if (!v || v <= 0) return "#eceff1"; 
-    for (let i = BINS.length-1; i>=0; i--) 
-      if (v >= BINS[i]) return COLORS[i]; 
-    return COLORS[0]; 
+  function getColor(v) {
+    if (!v || v <= 0) return "#eceff1";
+    for (let i = BINS.length-1; i>=0; i--) if (v >= BINS[i]) return COLORS[i];
+    return COLORS[0];
   }
 
-  function renderLegend() { 
+  function renderLegend() {
     el('legendItems').innerHTML = BINS.map((b,i)=> `
       <div class="legend-row">
         <div class="swatch" style="background:${COLORS[i]}"></div>
         <span>${BINS[i+1] ? formatUSD(b)+' – '+formatUSD(BINS[i+1]) : '> '+formatUSD(b)}</span>
-      </div>
-    `).join('')+`
-      <div class="legend-row">
-        <div class="swatch" style="background:#eceff1"></div>
-        <span>No Recorded Damage</span>
-      </div>
-    `; 
+      </div>`).join('') + `<div class="legend-row"><div class="swatch" style="background:#eceff1"></div><span>No Data</span></div>`;
   }
 
   function refreshUI() {
-    if (!selectedIso) return;
     const entry = eventsByIso.get(selectedIso), mod = el('modelSelect').value;
-    
     eventMarkers.clearLayers();
-    entry.events.forEach(e => {
-      if (e.lat && e.lon) {
-        const dmg = mod === 'ensemble' ? getStats(e).med : (parseFloat(e[mod]) || 0);
-        const deathVal = e.dead || e.deaths || 0;
-        L.circleMarker([e.lat, e.lon], { 
-          radius: 7, 
-          color: '#424242', 
-          weight: 2, 
-          fillColor: '#757575', 
-          fillOpacity: 0.7 
-        })
-        .addTo(eventMarkers).bindPopup(`
-          <div style="font-family: inherit;">
-            <b style="color: #1976d2; font-size: 14px;">${e.MainCause}</b><br>
-            <span style="color: #666;">📅 ${e.Began} → ${e.Ended}</span><br>
-            <span style="color: #666;">⏱️ Duration: ${e.duration} days</span><br>
-            <span style="color: #666;">💀 Deaths: ${deathVal}</span><br>
-            <span style="color: #666;">📏 Area: ${e.area} km²</span><br>
-            <span style="color: #1565c0; font-weight: 600;">💰 Damage: ${formatUSD(dmg)}</span>
-          </div>
-        `);
-      }
-    });
 
-    const dataset = years.map(y => { 
-        const rs = entry?.annual[y] || [];
-        if (rs.length === 0) return {total:0, min:0, max:0, count:0};
-        
-        if (mod === 'ensemble') {
-          // For ensemble: sum of medians for each event
-          const total = rs.reduce((sum, r) => sum + getStats(r).med, 0);
-          const stats = getStats(rs);
-          return {total, min: stats.min, max: stats.max, count: rs.length};
-        } else {
-          // For individual models: sum of that model's predictions
-          const total = rs.reduce((sum, r) => sum + (parseFloat(r[mod]) || 0), 0);
-          return {total, min: 0, max: 0, count: rs.length};
-        }
+    const chartData = years.map(y => {
+      const rs = entry.annual[y] || [];
+      return rs.reduce((s, r) => s + (mod === 'ensemble' ? getStats(r).med : (parseFloat(r[mod]) || 0)), 0);
     });
 
     if (chart) chart.destroy();
-
-    const whiskerPlugin = {
-      id: 'whiskers',
-      afterDatasetsDraw(chart) {
-        const {ctx, scales: {x, y}} = chart;
-        const drawWhiskers = el('modelSelect').value === 'ensemble';
-        
-        ctx.save();
-        
-        // Draw points at end of bars
-        ctx.fillStyle = '#1976d2';
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
-        dataset.forEach((d, i) => {
-          if (d.total === 0) return;
-          const xPos = x.getPixelForValue(years[i]);
-          const yPos = y.getPixelForValue(d.total);
-          ctx.beginPath();
-          ctx.arc(xPos, yPos, 5, 0, 2 * Math.PI);
-          ctx.fill();
-          ctx.stroke();
-        });
-        
-        // Draw whiskers only in ensemble mode
-        if (drawWhiskers) {
-          ctx.strokeStyle = '#e53935'; 
-          ctx.lineWidth = 2;
-          dataset.forEach((d, i) => {
-            if (d.total === 0) return;
-            const xPos = x.getPixelForValue(years[i]);
-            const yMin = y.getPixelForValue(d.min || d.total);
-            const yMax = y.getPixelForValue(d.max || d.total);
-            ctx.beginPath(); ctx.moveTo(xPos, yMin); ctx.lineTo(xPos, yMax); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(xPos - 5, yMin); ctx.lineTo(xPos + 5, yMin); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(xPos - 5, yMax); ctx.lineTo(xPos + 5, yMax); ctx.stroke();
-          });
-        }
-        
-        ctx.restore();
-      }
-    };
-
     chart = new Chart(el('tsChart'), {
       type: 'bar',
-      data: {
-        labels: years,
-        datasets: [{
-          data: dataset.map(d => d.total),
-          backgroundColor: '#1976d2',
-          borderColor: '#0d47a1',
-          borderWidth: 0,
-          borderRadius: 0,
-          barThickness: 3
-        }]
-      },
-      options: {
-        maintainAspectRatio: false,
-        scales: { 
-          y: { 
-            type: 'logarithmic', 
-            min: 1e5, 
-            ticks: { callback: v => formatUSD(v) },
-            grid: { color: '#e0e0e0' }
-          },
-          x: {
-            grid: { display: false }
-          }
-        },
-        plugins: { 
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: 'rgba(33, 33, 33, 0.95)',
-            padding: 12,
-            titleFont: { size: 14, weight: 'bold' },
-            bodyFont: { size: 13 },
-            callbacks: {
-              label: (context) => {
-                return `Damage: ${formatUSD(context.parsed.y)}`;
-              },
-              afterBody: (context) => {
-                const idx = context[0].dataIndex;
-                return `Events: ${dataset[idx].count}`;
-              }
-            }
-          }
-        },
-        animation: {
-          onComplete: function() {
-            // Draw points after animation completes
-            const {ctx, scales: {x, y}} = this;
-            ctx.save();
-            ctx.fillStyle = '#1976d2';
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 2;
-            dataset.forEach((d, i) => {
-              if (d.total === 0) return;
-              const xPos = x.getPixelForValue(years[i]);
-              const yPos = y.getPixelForValue(d.total);
-              ctx.beginPath();
-              ctx.arc(xPos, yPos, 5, 0, 2 * Math.PI);
-              ctx.fill();
-              ctx.stroke();
-            });
-            ctx.restore();
-          }
-        }
-      },
-      plugins: [whiskerPlugin]
+      data: { labels: years, datasets: [{ data: chartData, backgroundColor: '#1976d2', barThickness: 4 }] },
+      options: { maintainAspectRatio: false, scales: { y: { type: 'logarithmic', min: 1e5, ticks: { callback: v => formatUSD(v) } } }, plugins: { legend: { display: false } } }
     });
 
-    const s = parseInt(el('startYear').value), eY = parseInt(el('endYear').value);
-    const filtered = entry.events.filter(e => { const y = parseInt(e.Began?.split('/')[0]); return y >= s && y <= eY; });
-    el('eventsList').innerHTML = filtered.map(ev => {
-      const dmg = mod === 'ensemble' ? getStats(ev).med : (parseFloat(ev[mod]) || 0);
-      const deathVal = ev.dead || ev.deaths || 0;
-      return `<div class="event-item">
-        <span class="pill">📅 ${ev.Began} – ${ev.Ended}</span><br>
-        <b style="color: #1976d2;">${ev.MainCause}</b><br>
-        <span style="color: #666;">⏱️ ${ev.duration} days | 💀 ${deathVal} deaths</span><br>
-        <span style="color: #666;">📏 ${ev.area} km² | 💰 ${formatUSD(dmg)}</span><br>
-        <span class="coord-text">📍 ${ev.lat}, ${ev.lon}</span>
-      </div>`;
-    }).join('');
+    el('eventsList').innerHTML = entry.events.slice(-10).map(e => `
+      <div style="padding:10px; border:1px solid #eee; border-radius:8px; margin-bottom:10px;">
+        <b>${e.MainCause}</b><br><small>${e.Began} | Deaths: ${e.dead || 0}</small>
+      </div>`).join('');
     
-    const totalArea = entry.events.reduce((s,e)=>s+(parseFloat(e.area)||0),0);
-    const totalDeaths = entry.events.reduce((s,e)=>s+(parseFloat(e.dead || e.deaths)||0),0);
-    el('countryStats').innerHTML = `
-        📊 Events: <span class="stat-val">${entry.events.length}</span><br>
-        💀 Total Deaths: <span class="stat-val">${totalDeaths.toLocaleString()}</span><br>
-        📏 Total Area: <span class="stat-val">${totalArea.toLocaleString()} km²</span>
-    `;
+    el('countryStats').innerHTML = `<div class="stat-val">${entry.events.length}</div><small>TOTAL EVENTS</small>`;
   }
-
-  el('savePng').onclick = () => {
-    const link = document.createElement('a');
-    link.download = `FLOOD-CHART-${el('countryName').textContent}.png`;
-    link.href = el('tsChart').toDataURL('image/png'); 
-    link.click();
-  };
-
-  el('dlCountry').onclick = () => {
-    if (!selectedIso) return alert("Please select a country first.");
-    const csv = Papa.unparse(eventsByIso.get(selectedIso).events);
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-    a.download = `FLOOD-XML-${el('countryName').textContent.replace(/\s+/g, '-')}.csv`;
-    a.click();
-  };
 
   el('modelSelect').onchange = () => { updateMap(); if(selectedIso) refreshUI(); };
   el('yearSelect').onchange = updateMap;
-  el('startYear').onchange = refreshUI; 
-  el('endYear').onchange = refreshUI;
   el('clearBtn').onclick = () => location.reload();
   
   init();

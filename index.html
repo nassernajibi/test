@@ -398,27 +398,53 @@
   <div style="height:220px; width:100%;"><canvas id="tsChart"></canvas></div>
 </div>
 
+<!-- Visitor Counter -->
 <div style="position: absolute; bottom: 15px; right: 15px; z-index: 2000; 
             background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
             padding: 10px 16px; border-radius: 10px; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             border: 1px solid rgba(0,0,0,0.06);
             font-size: 12px; font-weight: 600; color: #1976d2;">
-  👁️ <span id="visitor-count">...</span> visitors
+  👁️ <span id="visitor-count">Loading...</span> visitors
 </div>
 
 <script>
-  // Fixed Visitor counter for 2026
-  fetch('https://api.counterapi.dev/v1/flood-xml-mapper-portal/hits/up')
-    .then(res => res.json())
-    .then(data => {
-      if (data && data.count) {
-        document.getElementById('visitor-count').textContent = data.count.toLocaleString();
-      }
-    })
-    .catch(() => {
-      document.getElementById('visitor-count').textContent = 'Live';
-    });
+  // Visitor counter - try multiple APIs with fallback
+  (function() {
+    const countEl = document.getElementById('visitor-count');
+    
+    // Try countapi.xyz first
+    fetch('https://api.countapi.xyz/hit/flood-xml-mapper-portal/visits')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.value) {
+          countEl.textContent = data.value.toLocaleString();
+        } else {
+          throw new Error('Invalid response');
+        }
+      })
+      .catch(() => {
+        // Fallback: try hits.sh
+        fetch('https://hits.sh/flood-xml-mapper.count', { mode: 'cors' })
+          .then(res => res.text())
+          .then(count => {
+            const num = parseInt(count);
+            if (!isNaN(num)) {
+              countEl.textContent = num.toLocaleString();
+            } else {
+              throw new Error('Invalid count');
+            }
+          })
+          .catch(() => {
+            // Final fallback: use localStorage for session count
+            let localCount = localStorage.getItem('floodxml-visits') || 0;
+            localCount = parseInt(localCount) + 1;
+            localStorage.setItem('floodxml-visits', localCount);
+            countEl.textContent = localCount.toLocaleString();
+            countEl.parentElement.title = 'Session visits (counter API unavailable)';
+          });
+      });
+  })();
 
   const BINS = [0, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11];
   const COLORS = ["#d4c300", "#e6a300", "#f77f00", "#d62828", "#9d0208", "#6a040f", "#370617", "#03071e"];
@@ -562,12 +588,10 @@
         if (rs.length === 0) return {total:0, min:0, max:0, count:0};
         
         if (mod === 'ensemble') {
-          // For ensemble: sum of medians for each event
           const total = rs.reduce((sum, r) => sum + getStats(r).med, 0);
           const stats = getStats(rs);
           return {total, min: stats.min, max: stats.max, count: rs.length};
         } else {
-          // For individual models: sum of that model's predictions
           const total = rs.reduce((sum, r) => sum + (parseFloat(r[mod]) || 0), 0);
           return {total, min: 0, max: 0, count: rs.length};
         }
@@ -583,7 +607,6 @@
         
         ctx.save();
         
-        // Draw points at end of bars
         ctx.fillStyle = '#1976d2';
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
@@ -597,7 +620,6 @@
           ctx.stroke();
         });
         
-        // Draw whiskers only in ensemble mode
         if (drawWhiskers) {
           ctx.strokeStyle = '#e53935'; 
           ctx.lineWidth = 2;
@@ -646,102 +668,4 @@
           legend: { display: false },
             title: {
           display: true,
-        text: `${el('countryName').textContent}`,
-        font: {
-          size: 16,
-          weight: 'bold'
-          },
-        padding: {
-          top: 5,
-            bottom: 10
-              }
-                  },
-          tooltip: {
-            backgroundColor: 'rgba(33, 33, 33, 0.95)',
-            padding: 12,
-            titleFont: { size: 14, weight: 'bold' },
-            bodyFont: { size: 13 },
-            callbacks: {
-              label: (context) => {
-                return `Damage: ${formatUSD(context.parsed.y)}`;
-              },
-              afterBody: (context) => {
-                const idx = context[0].dataIndex;
-                return `Events: ${dataset[idx].count}`;
-              }
-            }
-          }
-        },
-        animation: {
-          onComplete: function() {
-            // Draw points after animation completes
-            const {ctx, scales: {x, y}} = this;
-            ctx.save();
-            ctx.fillStyle = '#1976d2';
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 2;
-            dataset.forEach((d, i) => {
-              if (d.total === 0) return;
-              const xPos = x.getPixelForValue(years[i]);
-              const yPos = y.getPixelForValue(d.total);
-              ctx.beginPath();
-              ctx.arc(xPos, yPos, 5, 0, 2 * Math.PI);
-              ctx.fill();
-              ctx.stroke();
-            });
-            ctx.restore();
-          }
-        }
-      },
-      plugins: [whiskerPlugin]
-    });
-
-    const s = parseInt(el('startYear').value), eY = parseInt(el('endYear').value);
-    const filtered = entry.events.filter(e => { const y = parseInt(e.Began?.split('/')[0]); return y >= s && y <= eY; });
-    el('eventsList').innerHTML = filtered.map(ev => {
-      const dmg = mod === 'ensemble' ? getStats(ev).med : (parseFloat(ev[mod]) || 0);
-      const deathVal = ev.dead || ev.deaths || 0;
-      return `<div class="event-item">
-        <span class="pill">📅 ${ev.Began} – ${ev.Ended}</span><br>
-        <b style="color: #1976d2;">${ev.MainCause}</b><br>
-        <span style="color: #666;">⏱️ ${ev.duration} days | 💀 ${deathVal} deaths</span><br>
-        <span style="color: #666;">📏 ${ev.area} km² | 💰 ${formatUSD(dmg)}</span><br>
-        <span class="coord-text">📍 ${ev.lat}, ${ev.lon}</span>
-      </div>`;
-    }).join('');
-    
-    const totalArea = entry.events.reduce((s,e)=>s+(parseFloat(e.area)||0),0);
-    const totalDeaths = entry.events.reduce((s,e)=>s+(parseFloat(e.dead || e.deaths)||0),0);
-    el('countryStats').innerHTML = `
-        📊 Events: <span class="stat-val">${entry.events.length}</span><br>
-        💀 Total Deaths: <span class="stat-val">${totalDeaths.toLocaleString()}</span><br>
-        📏 Total Area: <span class="stat-val">${totalArea.toLocaleString()} km²</span>
-    `;
-  }
-
-  el('savePng').onclick = () => {
-    const link = document.createElement('a');
-    link.download = `FLOOD_XML-USD-${el('countryName').textContent}.png`;
-    link.href = el('tsChart').toDataURL('image/png'); 
-    link.click();
-  };
-
-  el('dlCountry').onclick = () => {
-    if (!selectedIso) return alert("Please select a country first.");
-    const csv = Papa.unparse(eventsByIso.get(selectedIso).events);
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-    a.download = `FLOOD-XML-${el('countryName').textContent.replace(/\s+/g, '-')}.csv`;
-    a.click();
-  };
-
-  el('modelSelect').onchange = () => { updateMap(); if(selectedIso) refreshUI(); };
-  el('yearSelect').onchange = updateMap;
-  el('startYear').onchange = refreshUI; 
-  el('endYear').onchange = refreshUI;
-  el('clearBtn').onclick = () => location.reload();
-  
-  init();
-</script>
-</body>
-</html>
+        text: `${el('countryName').

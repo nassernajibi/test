@@ -404,15 +404,17 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             border: 1px solid rgba(0,0,0,0.06);
             font-size: 12px; font-weight: 600; color: #1976d2;">
-  👁️ <span id="visitor-count">1</span> visitors
+  👁️ <span id="visitor-count">...</span> visitors
 </div>
 
 <script>
-  // Visitor counter (FIXED API FOR 2026)
-  fetch('https://api.counterapi.dev/v1/flood_xml_portal_v1/hits/up')
+  // Fixed Visitor counter for 2026
+  fetch('https://api.counterapi.dev/v1/flood-xml-mapper-portal/hits/up')
     .then(res => res.json())
     .then(data => {
-      document.getElementById('visitor-count').textContent = data.count.toLocaleString();
+      if (data && data.count) {
+        document.getElementById('visitor-count').textContent = data.count.toLocaleString();
+      }
     })
     .catch(() => {
       document.getElementById('visitor-count').textContent = 'Live';
@@ -560,10 +562,12 @@
         if (rs.length === 0) return {total:0, min:0, max:0, count:0};
         
         if (mod === 'ensemble') {
+          // For ensemble: sum of medians for each event
           const total = rs.reduce((sum, r) => sum + getStats(r).med, 0);
           const stats = getStats(rs);
           return {total, min: stats.min, max: stats.max, count: rs.length};
         } else {
+          // For individual models: sum of that model's predictions
           const total = rs.reduce((sum, r) => sum + (parseFloat(r[mod]) || 0), 0);
           return {total, min: 0, max: 0, count: rs.length};
         }
@@ -579,6 +583,7 @@
         
         ctx.save();
         
+        // Draw points at end of bars
         ctx.fillStyle = '#1976d2';
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
@@ -592,6 +597,7 @@
           ctx.stroke();
         });
         
+        // Draw whiskers only in ensemble mode
         if (drawWhiskers) {
           ctx.strokeStyle = '#e53935'; 
           ctx.lineWidth = 2;
@@ -668,6 +674,7 @@
         },
         animation: {
           onComplete: function() {
+            // Draw points after animation completes
             const {ctx, scales: {x, y}} = this;
             ctx.save();
             ctx.fillStyle = '#1976d2';

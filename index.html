@@ -409,17 +409,32 @@
 </div>
 
 <script>
-  // Visitor counter
-  fetch('https://api.counterapi.dev/v1/flood-xml-mapper/visits/up')
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById('visitor-count').textContent =
-        (data.count ?? 0).toLocaleString();
-    })
-    .catch(err => {
+  // Visitor counter (CounterAPI)
+  (async () => {
+    const elCount = document.getElementById('visitor-count');
+    elCount.textContent = '…';
+
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), 6000);
+
+    try {
+      const res = await fetch('https://api.counterapi.dev/v1/flood-xml-mapper/visits/up', {
+        signal: controller.signal,
+        cache: 'no-store'
+      });
+      clearTimeout(t);
+
+      if (!res.ok) throw new Error(`CounterAPI HTTP ${res.status}`);
+      const data = await res.json();
+
+      if (typeof data.count !== 'number') throw new Error('CounterAPI returned no count');
+      elCount.textContent = data.count.toLocaleString();
+    } catch (err) {
+      clearTimeout(t);
       console.warn('Visitor counter failed:', err);
-      document.getElementById('visitor-count').textContent = 'N/A';
-    });
+      elCount.textContent = 'N/A';
+    }
+  })();
 
   const BINS = [0, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11];
   const COLORS = ["#d4c300", "#e6a300", "#f77f00", "#d62828", "#9d0208", "#6a040f", "#370617", "#03071e"];

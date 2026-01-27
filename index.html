@@ -407,16 +407,15 @@
             font-size: 12px; font-weight: 600; color: #1976d2;">
   👁️ <span id="visitor-count">---</span> visitors
 </div>
-<script src="https://cdn.jsdelivr.net/npm/counterapi/dist/counter.browser.min.js"></script>
 
 <script>
- function FLOODXMLVisits(res) {
+  function FLOODXMLVisits(res) {
     const elCount = document.getElementById('visitor-count');
     if (res && typeof res.value === 'number') elCount.textContent = res.value.toLocaleString();
     else elCount.textContent = 'N/A';
   }
-
-<script async src="https://api.countapi.xyz/hit/flood-xml-mapper/visits?callback=FLOODXMLVisits">
+</script>
+<script async src="https://api.countapi.xyz/hit/flood-xml-mapper/visits?callback=FLOODXMLVisits"></script>
 
   const BINS = [0, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11];
   const COLORS = ["#d4c300", "#e6a300", "#f77f00", "#d62828", "#9d0208", "#6a040f", "#370617", "#03071e"];

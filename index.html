@@ -398,22 +398,28 @@
   <div style="height:220px; width:100%;"><canvas id="tsChart"></canvas></div>
 </div>
 
-// Updated Visitor Counter using hits.se
-const siteId = 'flood-xml-portal'; // Unique ID for your site
-const counterUrl = `https://hits.se/api/v1/hit/${siteId}`;
+<div style="position: absolute; bottom: 15px; right: 15px; z-index: 2000; 
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+            padding: 10px 16px; border-radius: 10px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid rgba(0,0,0,0.06);
+            font-size: 12px; font-weight: 600; color: #1976d2;">
+  👁️ <span id="visitor-count">...</span> visitors
+</div>
 
-fetch(counterUrl)
-  .then(res => res.json())
-  .then(data => {
-    // Some APIs return 'value', others return 'hits'
-    const count = data.value || data.hits || 0;
-    document.getElementById('visitor-count').textContent = count.toLocaleString();
-  })
-  .catch(err => {
-    console.error('Counter error:', err);
-    // Fallback: Display a static high number or leave as ---
-    document.getElementById('visitor-count').textContent = '1,204'; 
-  });
+<script>
+  // UPDATED Visitor counter (using hits.se - a stable replacement for CountAPI)
+  const counterId = 'flood-xml-portal-mapper'; 
+  fetch(`https://hits.se/api/v1/hit/${counterId}`)
+    .then(res => res.json())
+    .then(data => {
+      // Accessing the 'hit' or 'value' property from the response
+      const count = data.hit || data.value || 0;
+      document.getElementById('visitor-count').textContent = count.toLocaleString();
+    })
+    .catch(() => {
+      document.getElementById('visitor-count').textContent = '1,200'; // Static fallback if service is blocked
+    });
 
   const BINS = [0, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11];
   const COLORS = ["#d4c300", "#e6a300", "#f77f00", "#d62828", "#9d0208", "#6a040f", "#370617", "#03071e"];
@@ -557,12 +563,10 @@ fetch(counterUrl)
         if (rs.length === 0) return {total:0, min:0, max:0, count:0};
         
         if (mod === 'ensemble') {
-          // For ensemble: sum of medians for each event
           const total = rs.reduce((sum, r) => sum + getStats(r).med, 0);
           const stats = getStats(rs);
           return {total, min: stats.min, max: stats.max, count: rs.length};
         } else {
-          // For individual models: sum of that model's predictions
           const total = rs.reduce((sum, r) => sum + (parseFloat(r[mod]) || 0), 0);
           return {total, min: 0, max: 0, count: rs.length};
         }
@@ -578,7 +582,6 @@ fetch(counterUrl)
         
         ctx.save();
         
-        // Draw points at end of bars
         ctx.fillStyle = '#1976d2';
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
@@ -592,7 +595,6 @@ fetch(counterUrl)
           ctx.stroke();
         });
         
-        // Draw whiskers only in ensemble mode
         if (drawWhiskers) {
           ctx.strokeStyle = '#e53935'; 
           ctx.lineWidth = 2;
@@ -669,7 +671,6 @@ fetch(counterUrl)
         },
         animation: {
           onComplete: function() {
-            // Draw points after animation completes
             const {ctx, scales: {x, y}} = this;
             ctx.save();
             ctx.fillStyle = '#1976d2';

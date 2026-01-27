@@ -405,22 +405,27 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             border: 1px solid rgba(0,0,0,0.06);
             font-size: 12px; font-weight: 600; color: #1976d2;">
-  👁️ <span id="visitor-count">---</span> visitors
+  👁️ <span id="visitor-count">...</span> visitors
 </div>
 
 <script>
-  function FLOODXMLVisits(res) {
-    console.log('CountAPI response:', res);
-    const elCount = document.getElementById('visitor-count');
-    if (res && typeof res.value === 'number') {
-      elCount.textContent = res.value.toLocaleString();
-    } else {
-      elCount.textContent = 'N/A';
-    }
-  }
-</script>
-
-<script async src="https://api.countapi.xyz/hit/flood-xml-mapper/visits?callback=FLOODXMLVisits"></script>
+  // Modern 2026 Visitor Counter Logic
+  (function() {
+    // We use a unique namespace 'flood-xml-2026' to start a fresh count
+    fetch('https://api.counterapi.dev/v1/flood-xml-2026/visits/up')
+      .then(response => response.json())
+      .then(data => {
+        if (data && data.count) {
+          document.getElementById('visitor-count').textContent = data.count.toLocaleString();
+        } else {
+          document.getElementById('visitor-count').textContent = 'Live';
+        }
+      })
+      .catch(err => {
+        console.error('Counter Error:', err);
+        document.getElementById('visitor-count').textContent = 'Live';
+      });
+  })();
 <script>
 
   const BINS = [0, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11];

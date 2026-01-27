@@ -408,17 +408,17 @@
 </div>
 
 <script>
-  // UPDATED Visitor counter (using hits.se - a stable replacement for CountAPI)
-  const counterId = 'flood-xml-portal-mapper'; 
-  fetch(`https://hits.se/api/v1/hit/${counterId}`)
+// UPDATED Visitor counter with Cache-Busting
+  const counterId = 'flood-xml-portal-v1'; 
+  fetch(`https://hits.se/api/v1/hit/${counterId}?nocache=${Date.now()}`)
     .then(res => res.json())
     .then(data => {
-      // Accessing the 'hit' or 'value' property from the response
       const count = data.hit || data.value || 0;
       document.getElementById('visitor-count').textContent = count.toLocaleString();
     })
-    .catch(() => {
-      document.getElementById('visitor-count').textContent = '1,200'; // Static fallback if service is blocked
+    .catch(err => {
+      console.error("Counter Error:", err);
+      document.getElementById('visitor-count').textContent = 'Error'; 
     });
 
   const BINS = [0, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11];

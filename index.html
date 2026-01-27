@@ -410,6 +410,7 @@
 
 <script>
   function FLOODXMLVisits(res) {
+    console.log('CountAPI response:', res);
     const elCount = document.getElementById('visitor-count');
     if (res && typeof res.value === 'number') {
       elCount.textContent = res.value.toLocaleString();

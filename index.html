@@ -566,7 +566,7 @@
     el('legendItems').innerHTML = BINS.map((b,i)=> `
       <div class="legend-row">
         <div class="swatch" style="background:${COLORS[i]}"></div>
-        <span>${BINS[i+1] ? formatUSD(b)+' – '+formatUSD(BINS[i+1]) : '> '+formatUSD(b)}</span>
+        <span>${BINS[i+1] ? (b === 0 ? '< ' + formatUSD(BINS[i+1]) : formatUSD(b) + ' – ' + formatUSD(BINS[i+1])) : '> ' + formatUSD(b)}</span>
       </div>
     `).join('')+`
       <div class="legend-row">

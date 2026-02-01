@@ -398,19 +398,10 @@
   <div style="height:220px; width:100%;"><canvas id="tsChart"></canvas></div>
 </div>
 
-<!-- Visitor Counter -->
-<div style="position: absolute; bottom: 15px; right: 15px; z-index: 2000; 
-            background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
-            padding: 10px 16px; border-radius: 10px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border: 1px solid rgba(0,0,0,0.06);
-            font-size: 12px; font-weight: 600; color: #1976d2;">
-  👁️ <span id="visitor-count">000</span> visitors
-</div>
 <style>
   .info-link {
     position: absolute;
-    bottom: 75px; /* Sits above the visitor counter */
+    bottom: 75px; 
     right: 15px;
     z-index: 2000;
     background: rgba(255, 255, 255, 0.95);
@@ -443,7 +434,14 @@
 </a>
 
 <div style="position: absolute; bottom: 15px; right: 15px; z-index: 2000; 
-  
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+            padding: 10px 16px; border-radius: 10px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid rgba(0,0,0,0.06);
+            font-size: 12px; font-weight: 600; color: #1976d2;">
+  👁️ <span id="visitor-count">000</span> visitors
+</div>
+
 <script>
   (function() {
     const countEl = document.getElementById('visitor-count');
